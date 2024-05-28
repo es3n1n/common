@@ -1,0 +1,35 @@
+[cmake]
+version = "3.15"
+cmkr-include = "cmake/cmkr.cmake"
+
+[project]
+name = "common"
+languages = ["CXX"]
+
+[options]
+COMMON_BUILD_TESTS = false
+
+[conditions]
+common-build-tests = "COMMON_BUILD_TESTS"
+
+[target.common]
+alias = "es3n1n::common"
+type = "interface"
+compile-features = ["cxx_std_23"]
+compile-definitions = ["NOMINMAX"]
+include-directories = ["src/lib/"]
+
+[fetch-content.GTest]
+git = "https://github.com/google/googletest"
+tag = "v1.14.0"
+condition = "common-build-tests"
+
+[target.common-tests]
+type = "executable"
+condition = "common-build-tests"
+sources = ["src/tests/**.cpp"]
+include-directories = ["src/tests/"]
+link-libraries = ["es3n1n::common", "GTest::gtest_main"]
+unix.compile-options = ["-stdlib=libc++"]
+unix.link-options = ["-lc++", "-lc++abi", "-fuse-ld=lld"]
+msvc.compile-options = ["/MP"]
