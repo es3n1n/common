@@ -1,5 +1,4 @@
 #pragma once
-#include "../logger.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <expected>
