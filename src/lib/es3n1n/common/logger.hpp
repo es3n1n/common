@@ -174,15 +174,17 @@ namespace logger {
 
             while (std::getline(stream, line)) {
                 if (show_timestamps) {
-                    const auto now = std::chrono::system_clock::now();
+                    static auto zone = std::chrono::current_zone(); // surely it would not change
+                    const auto now = std::chrono::zoned_time{zone, std::chrono::system_clock::now()};
+                    const auto tm = now.get_local_time();
 
                     /// \note @es3n1n: There doesn't seem to be a way to set the number of digits for `%S%`
                     /// so a dirty workaround for this would be manually converting to seconds/milliseconds
                     /// \ref https://eel.is/c++draft/time.format#6
-                    const auto now_sec = std::chrono::time_point_cast<std::chrono::seconds>(now);
-                    const auto now_msec = std::chrono::duration_cast<std::chrono::milliseconds>(now - now_sec).count();
+                    const auto now_sec = std::chrono::time_point_cast<std::chrono::seconds>(tm);
+                    const auto now_msec = std::chrono::duration_cast<std::chrono::milliseconds>(tm - now_sec).count();
 
-                    std::cout << std::format("{:%H:%M:}{:%S}.{:0>3}", now, now_sec, now_msec) << " | ";
+                    std::cout << std::format("{:%H:%M:%S}.{:0>3}", now_sec, now_msec) << " | ";
                 }
 
                 indent(indentation);
