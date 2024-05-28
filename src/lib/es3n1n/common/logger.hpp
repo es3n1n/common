@@ -174,19 +174,15 @@ namespace logger {
 
             while (std::getline(stream, line)) {
                 if (show_timestamps) {
-                    auto now = std::chrono::system_clock::now();
-                    std::time_t time_now = std::chrono::system_clock::to_time_t(now);
-#if PLATFORM_IS_MSVC
-                    std::tm now_tm;
-                    localtime_s(&now_tm, &time_now);
-#else
-                    std::tm now_tm = *std::localtime(&time_now);
-#endif
+                    const auto now = std::chrono::system_clock::now();
 
-                    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
+                    /// \note @es3n1n: There doesn't seem to be a way to set the number of digits for `%S%`
+                    /// so a dirty workaround for this would be manually converting to seconds/milliseconds
+                    /// \ref https://eel.is/c++draft/time.format#6
+                    const auto now_sec = std::chrono::time_point_cast<std::chrono::seconds>(now);
+                    const auto now_msec = std::chrono::duration_cast<std::chrono::milliseconds>(now - now_sec).count();
 
-                    std::cout << std::put_time(&now_tm, "%H:%M:%S.");
-                    std::cout << std::setfill('0') << std::setw(3) << milliseconds.count() << " | ";
+                    std::cout << std::format("{:%H:%M:}{:%S}.{:0>3}", now, now_sec, now_msec) << " | ";
                 }
 
                 indent(indentation);
