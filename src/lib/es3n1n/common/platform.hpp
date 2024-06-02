@@ -78,6 +78,8 @@
 ///
 namespace platform {
     [[maybe_unused]] constexpr size_t bitness = std::numeric_limits<size_t>::digits;
+    [[maybe_unused]] constexpr bool is_x64 = bitness == 64;
+    [[maybe_unused]] constexpr bool is_x32 = bitness == 32;
 
     [[maybe_unused]] constexpr bool is_win = PLATFORM_IS_WIN;
     [[maybe_unused]] constexpr bool is_win32 = PLATFORM_IS_WIN32;
