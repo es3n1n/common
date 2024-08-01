@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <string>
 
-namespace string_parser2 {
+namespace string_parser {
 
     namespace detail {
 
