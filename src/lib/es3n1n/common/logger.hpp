@@ -55,7 +55,7 @@ namespace logger {
             [[maybe_unused]] inline constexpr col_t BRIGHT_GREEN = {92, 102};
             [[maybe_unused]] inline constexpr col_t BRIGHT_YELLOW = {93, 103};
             [[maybe_unused]] inline constexpr col_t BRIGHT_BLUE = {94, 104};
-            [[maybe_unused]] inline constexpr col_t BRIGHT_MAGNETA = {95, 105};
+            [[maybe_unused]] inline constexpr col_t BRIGHT_MAGENTA = {95, 105};
             [[maybe_unused]] inline constexpr col_t BRIGHT_CYAN = {96, 106};
             [[maybe_unused]] inline constexpr col_t BRIGHT_WHITE = {97, 107};
         } // namespace colors
@@ -139,10 +139,10 @@ namespace logger {
 
         /// The main method that would be used to log lines
         ///
-        template <str_t T>
+        template <str_t Ty, bool IsWide = std::is_same_v<Ty, std::wstring>>
         void log_line(const std::uint8_t indentation, const std::string_view level_name, //
                       const std::uint8_t color_fg, const std::uint8_t color_bg, //
-                      const T& msg) noexcept {
+                      const Ty& msg) noexcept {
             /// If logger is disabled
             ///
             if (!enabled) {
@@ -169,10 +169,8 @@ namespace logger {
 
             /// Iterating lines
             ///
-            T line;
-            std::conditional_t<std::is_same_v<T, std::wstring>, std::wistringstream, std::istringstream> stream(msg);
-
-            while (std::getline(stream, line)) {
+            std::conditional_t<IsWide, std::wistringstream, std::istringstream> stream(msg);
+            for (Ty line; std::getline(stream, line);) {
                 if (show_timestamps) {
                     static auto zone = std::chrono::current_zone(); // surely it would not change
                     const auto now = std::chrono::zoned_time{zone, std::chrono::system_clock::now()};
@@ -193,9 +191,9 @@ namespace logger {
                 apply_style(color_fg, color_bg, [=]() -> void { std::cout << std::format("{:^{}}", level_name, kMaxLevelNameSize); });
                 std::cout << "] ";
 
-                /// \fixme: @es3n1n: this is ugly af
+                /// \fixme: @es3n1n: this is ugly
                 ///
-                if constexpr (std::is_same_v<T, std::wstring>) {
+                if constexpr (IsWide) {
                     std::wcout << line << "\n";
                 } else {
                     std::cout << line << "\n";
@@ -210,9 +208,9 @@ namespace logger {
         std::conditional_t<detail::wchar_str_view_t<Str>, std::wstring, std::string> msg; \
                                                                                           \
         if constexpr (detail::wchar_str_view_t<Str>) {                                    \
-            msg = std::vformat(fmt, std::make_wformat_args(std::forward<Args>(args)...)); \
+            msg = std::vformat(fmt, std::make_wformat_args(args...));                     \
         } else {                                                                          \
-            msg = std::vformat(fmt, std::make_format_args(std::forward<Args>(args)...));  \
+            msg = std::vformat(fmt, std::make_format_args(args...));                      \
         }                                                                                 \
                                                                                           \
         detail::log_line(Indentation, prefix, (color_fg).fg, (color_bg).bg, msg);         \
@@ -221,7 +219,7 @@ namespace logger {
     MAKE_LOGGER_METHOD(debug, "debug", detail::colors::BRIGHT_WHITE, detail::colors::NO_COLOR)
     MAKE_LOGGER_METHOD(info, "info", detail::colors::BRIGHT_GREEN, detail::colors::NO_COLOR)
     MAKE_LOGGER_METHOD(warn, "warn", detail::colors::BRIGHT_YELLOW, detail::colors::NO_COLOR)
-    MAKE_LOGGER_METHOD(error, "error", detail::colors::BRIGHT_MAGNETA, detail::colors::NO_COLOR)
+    MAKE_LOGGER_METHOD(error, "error", detail::colors::BRIGHT_MAGENTA, detail::colors::NO_COLOR)
     MAKE_LOGGER_METHOD(critical, "critical", detail::colors::BRIGHT_WHITE, detail::colors::MAGENTA)
 
     MAKE_LOGGER_METHOD(msg, "msg", detail::colors::BRIGHT_WHITE, detail::colors::NO_COLOR)
