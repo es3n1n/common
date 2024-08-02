@@ -250,4 +250,4 @@ namespace logger {
 #define TODO_NO_ARG(indentation, fmt) logger::todo<indentation>(fmt)
 
 #define FIXME(indentation, fmt, ...) logger::fixme<indentation>(fmt, __VA_ARGS__)
-#define TODO(indentation, fmt, ...) logger::fixme<indentation>(fmt, __VA_ARGS__)
+#define TODO(indentation, fmt, ...) logger::todo<indentation>(fmt, __VA_ARGS__)
