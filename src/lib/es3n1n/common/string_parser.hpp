@@ -8,49 +8,50 @@
 #include <string>
 
 namespace string_parser {
-
     namespace detail {
-
-        // \note: @annihilatorq: this scope is a mess, but idk how to make
-        // it more readable & cleaner, unfortunately, std::from_chars
-        // does not support strings with "0x" prefixes
-
-        /// Check if the string represents a negative value
-        ///
-        bool is_negative_value(const std::string_view view) {
-            return view.front() == '-';
-        }
+        /// \note: @annihilatorq: this scope is a mess, but idk how to make
+        /// it more readable & cleaner, unfortunately, std::from_chars
+        /// does not support strings with "0x" prefixes
 
         /// Since std::from_chars doesn't support "0x" prefixed hex strings,
         /// we need to process and remove prefixes before usage.
         ///
-        void strip_hex_prefix(std::string_view& view, bool is_negative, int base) {
-            if (view.starts_with("-0x") || view.starts_with("-0X")) {
-                view.remove_prefix(3);
-            } else if (view.starts_with("0x") || view.starts_with("0X")) {
-                view.remove_prefix(2);
+        void strip_hex_prefix(std::string& str, bool is_negative) {
+            /// We trust the is_negative, we also trust that the input is indeed in hexadecimal form.
+            if (str.size() < 2) {
+                return;
             }
+
+            /// For negative hex values we can leave the - sign however we must remove the 0x
+            if (is_negative) {
+                assert(str.size() >= 3);
+                str.erase(1, 2);
+                return;
+            }
+
+            /// Remove 0x
+            str.erase(0, 2);
         }
 
-        template <typename T>
-        [[nodiscard]] T parse_from_chars(std::string_view s, int base = 10) {
-            const auto is_negative = is_negative_value(s);
+        template <std::integral Ty>
+        [[nodiscard]] Ty parse_from_chars(std::string s, int base = 10) {
+            const auto is_negative = s.front() == '-';
             const auto is_hex = base == 16;
 
             if (is_hex) {
-                strip_hex_prefix(s, is_negative, base);
+                strip_hex_prefix(s, is_negative);
             }
 
-            T value;
-            auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), value, base);
+            Ty result;
+            auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), result, base);
             if (ec == std::errc::invalid_argument) {
                 throw std::invalid_argument("Failed to parse integer from string: invalid argument");
             } else if (ec == std::errc::result_out_of_range) {
                 throw std::out_of_range("Failed to parse integer from string: out of range");
             }
 
-            /// Reintroduce HEX as negative if it was negative
-            return is_negative && is_hex ? static_cast<T>(-static_cast<std::make_signed_t<T>>(value)) : value;
+            assert(ec == static_cast<std::errc>(0));
+            return result;
         }
     } // namespace detail
 
@@ -59,7 +60,7 @@ namespace string_parser {
     /// \param base base (10 for decimal, 16 for hex, etc)
     /// \return parsed value
     [[nodiscard]] inline std::int32_t parse_int32(const std::string_view s, const std::size_t base = 10) {
-        return detail::parse_from_chars<std::int32_t>(s, static_cast<int>(base));
+        return detail::parse_from_chars<std::int32_t>(s.data(), static_cast<int>(base));
     }
 
     /// \brief Parse uint32 from string
@@ -67,7 +68,7 @@ namespace string_parser {
     /// \param base base (10 for decimal, 16 for hex, etc)
     /// \return parsed value
     [[nodiscard]] inline std::uint32_t parse_uint32(const std::string_view s, const std::size_t base = 10) {
-        return detail::parse_from_chars<std::uint32_t>(s, static_cast<int>(base));
+        return detail::parse_from_chars<std::uint32_t>(s.data(), static_cast<int>(base));
     }
 
     /// \brief Parse int8 from string
