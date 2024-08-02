@@ -3,16 +3,64 @@
 
 #include <any>
 #include <cassert>
+#include <charconv>
 #include <cstdint>
 #include <string>
 
 namespace string_parser {
+    namespace detail {
+        /// \note: @annihilatorq: this scope is a mess, but idk how to make
+        /// it more readable & cleaner, unfortunately, std::from_chars
+        /// does not support strings with "0x" prefixes
+
+        /// Since std::from_chars doesn't support "0x" prefixed hex strings,
+        /// we need to process and remove prefixes before usage.
+        ///
+        void strip_hex_prefix(std::string& str, bool is_negative) {
+            /// We trust the is_negative, we also trust that the input is indeed in hexadecimal form.
+            if (str.size() < 2) {
+                return;
+            }
+
+            /// For negative hex values we can leave the - sign however we must remove the 0x
+            if (is_negative) {
+                assert(str.size() >= 3);
+                str.erase(1, 2);
+                return;
+            }
+
+            /// Remove 0x
+            str.erase(0, 2);
+        }
+
+        template <std::integral Ty>
+        [[nodiscard]] Ty parse_from_chars(std::string s, int base = 10) {
+            const auto is_negative = s.front() == '-';
+            const auto is_hex = base == 16;
+
+            if (is_hex) {
+                strip_hex_prefix(s, is_negative);
+            }
+
+            Ty result;
+            auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), result, base);
+            if (ec == std::errc::invalid_argument) {
+                throw std::invalid_argument("Failed to parse integer from string: invalid argument");
+            } else if (ec == std::errc::result_out_of_range) {
+                throw std::out_of_range("Failed to parse integer from string: out of range");
+            }
+
+            assert(ec == static_cast<std::errc>(0));
+            return result;
+        }
+    } // namespace detail
+
     /// \brief Parse int32 from string
     /// \param s string that contain int32
     /// \param base base (10 for decimal, 16 for hex, etc)
     /// \return parsed value
     [[nodiscard]] inline std::int32_t parse_int32(const std::string_view s, const std::size_t base = 10) {
-        return std::stoi(s.data(), nullptr, static_cast<int>(base));
+        return detail::parse_from_chars<std::int32_t>(s.data(), static_cast<int>(base));
     }
 
     /// \brief Parse uint32 from string
@@ -20,7 +68,7 @@ namespace string_parser {
     /// \param base base (10 for decimal, 16 for hex, etc)
     /// \return parsed value
     [[nodiscard]] inline std::uint32_t parse_uint32(const std::string_view s, const std::size_t base = 10) {
-        return std::stoul(s.data(), nullptr, static_cast<int>(base));
+        return detail::parse_from_chars<std::uint32_t>(s.data(), static_cast<int>(base));
     }
 
     /// \brief Parse int8 from string
@@ -131,8 +179,8 @@ namespace string_parser {
         assert(ref.has_value());
         const auto hash = ref.type().hash_code();
 
-/// This is ugly, however, i can't calculate typeid(T).hash_code() in constexpr so
-/// no optimized switch cases :shrug: (could be implementation defined)
+        /// This is ugly, however, i can't calculate typeid(T).hash_code() in constexpr so
+        /// no optimized switch cases :shrug: (could be implementation defined)
 #define MAKE_CASE(type)                                   \
     if (hash == typeid(type).hash_code()) {               \
         return serialize<type>(std::any_cast<type>(ref)); \
@@ -146,6 +194,6 @@ namespace string_parser {
 
 #undef MAKE_CASE
 
-        throw std::runtime_error(std::format("parse_to_any: Unable to serialize -> unsupported type"));
+        throw std::runtime_error(std::format("serialize_any: Unable to serialize -> unsupported type"));
     }
-} // namespace string
+} // namespace string_parser

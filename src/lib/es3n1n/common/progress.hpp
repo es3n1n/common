@@ -43,6 +43,6 @@ namespace progress {
         /// \brief Total number of steps
         std::size_t steps_ = {};
         /// \brief Current step
-        std::ptrdiff_t step_ = -1; // we start at -1 and it will automatically increment it to 0
+        std::ptrdiff_t step_ = -1; // we start at -1, and it will automatically increment it to 0
     };
 } // namespace progress

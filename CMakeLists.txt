@@ -26,6 +26,7 @@ endif()
 
 # Options
 option(COMMON_BUILD_TESTS "" OFF)
+option(COMMON_BUILD_BENCHMARKS "" OFF)
 
 project(common
 	LANGUAGES
@@ -39,14 +40,25 @@ if(POLICY CMP0135)
 	cmake_policy(SET CMP0135 NEW)
 endif()
 if(COMMON_BUILD_TESTS) # common-build-tests
-	message(STATUS "Fetching GTest (v1.14.0)...")
+	message(STATUS "Fetching GTest (v1.15.2)...")
 	FetchContent_Declare(GTest SYSTEM
 		GIT_REPOSITORY
 			"https://github.com/google/googletest"
 		GIT_TAG
-			v1.14.0
+			v1.15.2
 	)
 	FetchContent_MakeAvailable(GTest)
+
+endif()
+if(COMMON_BUILD_BENCHMARKS) # common-build-benchmarks
+	message(STATUS "Fetching GBenchmark (v1.8.5)...")
+	FetchContent_Declare(GBenchmark SYSTEM
+		GIT_REPOSITORY
+			"https://github.com/google/benchmark"
+		GIT_TAG
+			v1.8.5
+	)
+	FetchContent_MakeAvailable(GBenchmark)
 
 endif()
 # Target: common
@@ -64,6 +76,30 @@ target_compile_features(common INTERFACE
 target_include_directories(common INTERFACE
 	"src/lib/"
 )
+
+# Target: common-project
+add_library(common-project INTERFACE)
+
+add_library(es3n1n::common::project ALIAS common-project)
+if(UNIX) # unix
+	target_compile_options(common-project INTERFACE
+		-stdlib=libc++
+	)
+endif()
+
+if(MSVC) # msvc
+	target_compile_options(common-project INTERFACE
+		"/MP"
+	)
+endif()
+
+if(UNIX) # unix
+	target_link_options(common-project INTERFACE
+		-lc++
+		-lc++abi
+		-fuse-ld=lld
+	)
+endif()
 
 # Target: common-tests
 if(COMMON_BUILD_TESTS) # common-build-tests
@@ -85,38 +121,48 @@ if(COMMON_BUILD_TESTS) # common-build-tests
 	target_sources(common-tests PRIVATE ${common-tests_SOURCES})
 	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${common-tests_SOURCES})
 
-	if(UNIX) # unix
-		target_compile_options(common-tests PRIVATE
-			-stdlib=libc++
-		)
-	endif()
-
-	if(MSVC) # msvc
-		target_compile_options(common-tests PRIVATE
-			"/MP"
-		)
-	endif()
-
 	target_include_directories(common-tests PRIVATE
 		"src/tests/"
 	)
 
 	target_link_libraries(common-tests PRIVATE
 		es3n1n::common
+		es3n1n::common::project
 		GTest::gtest_main
 	)
-
-	if(UNIX) # unix
-		target_link_options(common-tests PRIVATE
-			-lc++
-			-lc++abi
-			-fuse-ld=lld
-		)
-	endif()
 
 	get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)
 	if(NOT CMKR_VS_STARTUP_PROJECT)
 		set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT common-tests)
+	endif()
+
+endif()
+# Target: common-benchmarks
+if(COMMON_BUILD_BENCHMARKS) # common-build-benchmarks
+	set(common-benchmarks_SOURCES
+		"src/benchmark/benchmarks/string_parser.cpp"
+		"src/benchmark/main.cpp"
+		cmake.toml
+	)
+
+	add_executable(common-benchmarks)
+
+	target_sources(common-benchmarks PRIVATE ${common-benchmarks_SOURCES})
+	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${common-benchmarks_SOURCES})
+
+	target_include_directories(common-benchmarks PRIVATE
+		"src/benchmark/"
+	)
+
+	target_link_libraries(common-benchmarks PRIVATE
+		es3n1n::common
+		es3n1n::common::project
+		benchmark::benchmark
+	)
+
+	get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)
+	if(NOT CMKR_VS_STARTUP_PROJECT)
+		set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT common-benchmarks)
 	endif()
 
 endif()

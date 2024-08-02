@@ -38,6 +38,13 @@ TEST(address, readwrite) {
 
     EXPECT_NE(addr.self_inc_ptr<uint8_t>(), nullptr);
     EXPECT_EQ(addr.inner(), reinterpret_cast<std::uintptr_t>(buffer + 1));
+
+    addr = addr.offset(-1);
+    EXPECT_TRUE(addr.self_write_inc<std::uint8_t>(5).has_value());
+    EXPECT_EQ(addr.inner(), reinterpret_cast<std::uintptr_t>(buffer + 1));
+
+    addr = addr.offset(-1);
+    EXPECT_EQ(addr.read<std::uint8_t>().value(), 5);
 }
 
 TEST(address, aligns) {
