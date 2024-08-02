@@ -202,18 +202,16 @@ namespace logger {
         }
     } // namespace detail
 
-#define MAKE_LOGGER_METHOD(fn_name, prefix, color_fg, color_bg)                           \
-    template <std::uint8_t Indentation = 0, detail::str_view_t Str, typename... Args>     \
-    inline void fn_name(const Str fmt, Args... args) noexcept {                           \
-        std::conditional_t<detail::wchar_str_view_t<Str>, std::wstring, std::string> msg; \
-                                                                                          \
-        if constexpr (detail::wchar_str_view_t<Str>) {                                    \
-            msg = std::vformat(fmt, std::make_wformat_args(args...));                     \
-        } else {                                                                          \
-            msg = std::vformat(fmt, std::make_format_args(args...));                      \
-        }                                                                                 \
-                                                                                          \
-        detail::log_line(Indentation, prefix, (color_fg).fg, (color_bg).bg, msg);         \
+#define MAKE_LOGGER_METHOD(fn_name, prefix, color_fg, color_bg)                          \
+    template <std::uint8_t Indentation = 0, typename... Args>                            \
+    inline void fn_name(const std::format_string<Args...> fmt, Args... args) noexcept {  \
+        auto msg = std::vformat(fmt.get(), std::make_format_args(args...));              \
+        detail::log_line(Indentation, prefix, (color_fg).fg, (color_bg).bg, msg);        \
+    }                                                                                    \
+    template <std::uint8_t Indentation = 0, typename... Args>                            \
+    inline void fn_name(const std::wformat_string<Args...> fmt, Args... args) noexcept { \
+        auto msg = std::vformat(fmt.get(), std::make_wformat_args(args...));             \
+        detail::log_line(Indentation, prefix, (color_fg).fg, (color_bg).bg, msg);        \
     }
 
     MAKE_LOGGER_METHOD(debug, "debug", detail::colors::BRIGHT_WHITE, detail::colors::NO_COLOR)
