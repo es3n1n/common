@@ -8,9 +8,11 @@ languages = ["CXX"]
 
 [options]
 COMMON_BUILD_TESTS = false
+COMMON_BUILD_BENCHMARKS = false
 
 [conditions]
 common-build-tests = "COMMON_BUILD_TESTS"
+common-build-benchmarks = "COMMON_BUILD_BENCHMARKS"
 
 [target.common]
 alias = "es3n1n::common"
@@ -21,15 +23,31 @@ include-directories = ["src/lib/"]
 
 [fetch-content.GTest]
 git = "https://github.com/google/googletest"
-tag = "v1.14.0"
+tag = "v1.15.2"
 condition = "common-build-tests"
+
+[fetch-content.GBenchmark]
+git = "https://github.com/google/benchmark"
+tag = "v1.8.5"
+condition = "common-build-benchmarks"
+
+[target.common-project]
+alias = "es3n1n::common::project"
+type = "interface"
+unix.compile-options = ["-stdlib=libc++"]
+unix.link-options = ["-lc++", "-lc++abi", "-fuse-ld=lld"]
+msvc.compile-options = ["/MP"]
 
 [target.common-tests]
 type = "executable"
 condition = "common-build-tests"
 sources = ["src/tests/**.cpp"]
 include-directories = ["src/tests/"]
-link-libraries = ["es3n1n::common", "GTest::gtest_main"]
-unix.compile-options = ["-stdlib=libc++"]
-unix.link-options = ["-lc++", "-lc++abi", "-fuse-ld=lld"]
-msvc.compile-options = ["/MP"]
+link-libraries = ["es3n1n::common", "es3n1n::common::project", "GTest::gtest_main"]
+
+[target.common-benchmarks]
+type = "executable"
+condition = "common-build-benchmarks"
+sources = ["src/benchmark/**.cpp"]
+include-directories = ["src/benchmark/"]
+link-libraries = ["es3n1n::common", "es3n1n::common::project", "benchmark::benchmark"]
