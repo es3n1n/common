@@ -25,4 +25,6 @@ TEST(random, basics) {
     EXPECT_EQ(bytes[4], 0xBD);
 
     EXPECT_TRUE(rnd::chance(100));
+
+    EXPECT_EQ(rnd::or_(1, 2, 3), 2);
 }

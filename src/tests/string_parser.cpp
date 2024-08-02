@@ -34,4 +34,5 @@ TEST(string_parser, basics) {
     var.emplace<uint32_t>(0UL);
     string_parser::parse_to_any(var, "333");
     EXPECT_EQ(std::any_cast<uint32_t>(var), 333);
+    EXPECT_EQ(string_parser::serialize_any(var), "333");
 }
