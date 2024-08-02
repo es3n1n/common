@@ -21,7 +21,7 @@ namespace string_parser {
             return view.front() == '-';
         }
 
-        /// Since std::from_chars doesn't support '0x' prefixed hex strings,
+        /// Since std::from_chars doesn't support "0x" prefixed hex strings,
         /// we need to process and remove prefixes before usage.
         ///
         void strip_hex_prefix(std::string_view& view, bool is_negative, int base) {
@@ -195,4 +195,4 @@ namespace string_parser {
 
         throw std::runtime_error(std::format("serialize_any: Unable to serialize -> unsupported type"));
     }
-} // namespace string_parser2
+} // namespace string_parser
