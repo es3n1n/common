@@ -24,15 +24,14 @@ namespace progress {
 
             /// Calculate current percentage
             const auto percents = static_cast<float>(step_) / static_cast<float>(steps_);
+            const auto percents_mult = static_cast<std::size_t>(percents * 100);
 
             /// Format msg with elapsed time if needed
-            std::string msg = std::format("{}: {}%", title_, static_cast<std::size_t>(percents * 100));
             if (step_ == steps_) {
-                msg += std::format(" took {}", stopwatch_.elapsed());
+                logger::info("{}: {}% took {}", title_, percents_mult, stopwatch_.elapsed());
+                return;
             }
-
-            /// Print it
-            logger::info(msg.c_str());
+            logger::info("{}: {}%", title_, percents_mult);
         }
 
     private:

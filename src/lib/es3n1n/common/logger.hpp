@@ -226,14 +226,22 @@ namespace logger {
 
 #undef MAKE_LOGGER_METHOD
 
-#define MAKE_LOGGER_OR_METHOD(fn_name, if_true, if_false)                             \
-    template <std::uint8_t Indentation = 0, detail::str_view_t Str, typename... Args> \
-    inline void fn_name(bool condition, const Str fmt, Args... args) {                \
-        if (condition) {                                                              \
-            if_true<Indentation>(fmt, std::forward<Args>(args)...);                   \
-        } else {                                                                      \
-            if_false<Indentation>(fmt, std::forward<Args>(args)...);                  \
-        }                                                                             \
+#define MAKE_LOGGER_OR_METHOD(fn_name, if_true, if_false)                                                      \
+    template <std::uint8_t Indentation = 0, typename... Args>                                                  \
+    inline void fn_name(const bool condition, const std::format_string<Args...> fmt, Args... args) noexcept {  \
+        if (condition) {                                                                                       \
+            if_true<Indentation>(fmt, args...);                                                                \
+            return;                                                                                            \
+        }                                                                                                      \
+        if_false<Indentation>(fmt, args...);                                                                   \
+    }                                                                                                          \
+    template <std::uint8_t Indentation = 0, typename... Args>                                                  \
+    inline void fn_name(const bool condition, const std::wformat_string<Args...> fmt, Args... args) noexcept { \
+        if (condition) {                                                                                       \
+            if_true<Indentation>(fmt, args...);                                                                \
+            return;                                                                                            \
+        }                                                                                                      \
+        if_false<Indentation>(fmt, args...);                                                                   \
     }
 
     MAKE_LOGGER_OR_METHOD(info_or_warn, info, warn);
