@@ -3,7 +3,7 @@
 
 TEST(address, basics) {
     /// We aren't modifying zeroes
-    EXPECT_EQ(memory::address(0ULL).offset(1).inner(), 0);
+    EXPECT_EQ(memory::address(nullptr).offset(1).inner(), 0);
 
     EXPECT_EQ(memory::address(1ULL).offset(1).inner(), 2);
 }

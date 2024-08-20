@@ -8,6 +8,8 @@
 namespace memory {
     enum class e_error_code : std::uint8_t {
         INVALID_PARAMETERS = 0,
+        INVALID_ADDRESS,
+        NOT_ENOUGH_BYTES,
     };
 
     inline std::expected<std::size_t, e_error_code> read(void* buffer, const std::uintptr_t address, const std::size_t size) {

@@ -6,9 +6,6 @@ namespace stopwatch {
     /// \brief Our custom elapsed time storage
     class ElapsedTime {
     public:
-        DEFAULT_DTOR(ElapsedTime);
-        DEFAULT_COPY(ElapsedTime);
-
         /// \brief Explicit conversion from chrono duration to our own stuff
         /// \tparam Rep Duration rep
         /// \tparam Period Duration period
@@ -27,13 +24,13 @@ namespace stopwatch {
         [[nodiscard]] std::string str() const {
             std::string result = {};
             /// Convert hours
-            if (auto hrs = hours_.count()) {
-                result += std::format(" {} hr", hrs);
+            if (auto hr = hours_.count()) {
+                result += std::format(" {} hr", hr);
             }
 
             /// Convert minutes
-            if (auto mins = minutes_.count()) {
-                result += std::format(" {} min", mins);
+            if (auto min = minutes_.count()) {
+                result += std::format(" {} min", min);
             }
 
             /// Convert seconds
@@ -81,14 +78,11 @@ namespace stopwatch {
     };
 
     /// \brief A stopwatch class that should be used for all the time elapsing stuff
-    class Stopwatch {
+    class Stopwatch : public base::NonCopyable {
         using Clock = std::chrono::high_resolution_clock;
         using TimePoint = std::chrono::time_point<Clock>;
 
     public:
-        DEFAULT_DTOR(Stopwatch);
-        NON_COPYABLE(Stopwatch);
-
         /// \brief General constructor
         Stopwatch() noexcept {
             reset();

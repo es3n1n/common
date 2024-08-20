@@ -26,7 +26,7 @@ TEST(string_parser, basics) {
     EXPECT_EQ(string_parser::parse_bool("1"), true);
     EXPECT_EQ(string_parser::parse_bool("false"), false);
     EXPECT_EQ(string_parser::parse_bool("0"), false);
-    EXPECT_EQ(string_parser::parse_bool("asdasd"), false);
+    EXPECT_EQ(string_parser::parse_bool("asd"), false);
 
     EXPECT_EQ(string_parser::serialize(0UL), "0");
 

@@ -5,11 +5,8 @@
 
 namespace progress {
     /// \brief Progress-bar object
-    class Progress {
+    class Progress : public base::NonCopyable {
     public:
-        DEFAULT_DTOR(Progress);
-        NON_COPYABLE(Progress);
-
         /// \brief
         /// \param title Title like "Obfuscating function main"
         /// \param num_steps Number of total steps for a progress
@@ -24,14 +21,14 @@ namespace progress {
 
             /// Calculate current percentage
             const auto percents = static_cast<float>(step_) / static_cast<float>(steps_);
-            const auto percents_mult = static_cast<std::size_t>(percents * 100);
+            const auto percents_m = static_cast<std::size_t>(percents * 100);
 
             /// Format msg with elapsed time if needed
             if (step_ == steps_) {
-                logger::info("{}: {}% took {}", title_, percents_mult, stopwatch_.elapsed());
+                logger::info("{}: {}% took {}", title_, percents_m, stopwatch_.elapsed());
                 return;
             }
-            logger::info("{}: {}%", title_, percents_mult);
+            logger::info("{}: {}%", title_, percents_m);
         }
 
     private:

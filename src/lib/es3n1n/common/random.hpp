@@ -11,7 +11,7 @@ namespace rnd {
     namespace detail {
         /// We are gonna use the mersenne twister prng because its pretty convenient
         /// and its already present in std
-        inline std::mt19937_64 prng = {};
+        inline std::mt19937_64 prng;
 
         /// \brief Set the MT seed
         /// \param seed seed to set
@@ -36,7 +36,7 @@ namespace rnd {
     template <typename Ty = std::uint32_t, typename TyVal = std::remove_reference_t<Ty>, typename Limits = std::numeric_limits<TyVal>>
     [[nodiscard]] TyVal number(const TyVal min = Limits::min(), const TyVal max = Limits::max()) {
         /// We cannot generate une byte of data with uniform_int_distribution
-        using GenTy = std::conditional_t<types::is_any_of_v<Ty, std::int8_t, std::uint8_t, char>, int, TyVal>;
+        using GenTy = std::conditional_t<traits::is_any_of_v<Ty, std::int8_t, std::uint8_t, char>, int, TyVal>;
         std::uniform_int_distribution<GenTy> dist(min, max);
         return static_cast<TyVal>(dist(detail::prng));
     }
