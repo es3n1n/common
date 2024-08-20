@@ -124,7 +124,7 @@ namespace string_parser {
         } else if constexpr (Ctx::is_uint8) {
             return parse_uint8(s);
         } else {
-            static_assert(types::always_false_v<Ty>, "Unknown type to parse");
+            static_assert(traits::always_false_v<Ty>, "Unknown type to parse");
             return {};
         }
     }
@@ -140,7 +140,7 @@ namespace string_parser {
         } else if constexpr (Ctx::is_bool) {
             return value ? "true" : "false";
         } else {
-            static_assert(types::always_false_v<Ty>, "Unknown type to serialize");
+            static_assert(traits::always_false_v<Ty>, "Unknown type to serialize");
             return {};
         }
     }

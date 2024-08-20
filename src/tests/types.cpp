@@ -16,9 +16,4 @@ TEST(types, basics) {
     EXPECT_EQ(v[0], 5);
     EXPECT_EQ(v[1], 6);
     EXPECT_EQ(v[2], 7);
-
-    auto rng = types::range_t{.start = 5, .end = 15};
-    EXPECT_EQ(rng.size(), 10);
-
-    static_assert(!types::always_false_v<>);
 }

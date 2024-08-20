@@ -104,14 +104,17 @@ endif()
 # Target: common-tests
 if(COMMON_BUILD_TESTS) # common-build-tests
 	set(common-tests_SOURCES
+		"src/tests/base.cpp"
 		"src/tests/defers.cpp"
 		"src/tests/files.cpp"
 		"src/tests/logger.cpp"
 		"src/tests/memory/address.cpp"
+		"src/tests/memory/range.cpp"
 		"src/tests/platform.cpp"
 		"src/tests/progress.cpp"
 		"src/tests/random.cpp"
 		"src/tests/string_parser.cpp"
+		"src/tests/traits.cpp"
 		"src/tests/types.cpp"
 		cmake.toml
 	)

@@ -11,7 +11,7 @@ namespace rnd {
     namespace detail {
         /// We are gonna use the mersenne twister prng because its pretty convenient
         /// and its already present in std
-        inline std::mt19937_64 prng = {};
+        inline std::mt19937_64 prng;
 
         /// \brief Set the MT seed
         /// \param seed seed to set
@@ -26,6 +26,54 @@ namespace rnd {
             logger::info("random: seed is {:#x}", *seed);
             prng.seed(*seed);
         }
+
+        /// \brief A drop-in replacement for std::uniform_int_distribution.
+        ///
+        /// We are using a replacement because the uniform_int_distribution implementation is different in libc and libstdc++.
+        /// This is important because otherwise we can't reproduce random values across multiple platforms.
+        ///
+        /// \tparam IntType The integer type to be used for the distribution. Defaults to int.
+        template <typename IntType = int>
+        class UniformIntDistribution {
+        public:
+            using ResultTy = IntType;
+
+            explicit UniformIntDistribution(ResultTy min, ResultTy max = (std::numeric_limits<ResultTy>::max)()): min_(min), max_(max) { }
+
+            /// \brief Generates a random integer within the distribution range.
+            /// \engine The random engine instance to use.
+            template <typename Engine>
+            ResultTy operator()(Engine& engine) {
+                return eval(engine, min_, max_);
+            }
+
+        private:
+            using UResultTy = std::make_unsigned_t<ResultTy>;
+
+            /// \brief Evaluates the distribution and generates a random integer.
+            /// \param engine The random engine instance to use.
+            /// \param min The minimum value of the distribution (inclusive).
+            /// \param max The maximum value of the distribution (inclusive).
+            /// \return A random integer within the specified range.
+            template <typename Engine>
+            ResultTy eval(Engine& engine, ResultTy min, ResultTy max) const {
+                const auto u_min = static_cast<UResultTy>(min);
+                const auto u_max = static_cast<UResultTy>(max);
+
+                const UResultTy range = u_max - u_min + 1;
+
+                const auto r_raw = engine();
+                if (u_max - u_min == static_cast<UResultTy>(-1)) {
+                    return static_cast<ResultTy>(r_raw);
+                }
+
+                // todo @es3n1n: https://arxiv.org/pdf/1805.10941
+                return static_cast<ResultTy>(r_raw % range + u_min);
+            }
+
+            ResultTy min_;
+            ResultTy max_;
+        };
     } // namespace detail
 
     /// \brief Get random number in desired range
@@ -35,9 +83,8 @@ namespace rnd {
     /// \return random number
     template <typename Ty = std::uint32_t, typename TyVal = std::remove_reference_t<Ty>, typename Limits = std::numeric_limits<TyVal>>
     [[nodiscard]] TyVal number(const TyVal min = Limits::min(), const TyVal max = Limits::max()) {
-        /// We cannot generate une byte of data with uniform_int_distribution
-        using GenTy = std::conditional_t<types::is_any_of_v<Ty, std::int8_t, std::uint8_t, char>, int, TyVal>;
-        std::uniform_int_distribution<GenTy> dist(min, max);
+        static_assert(sizeof(Ty) <= sizeof(std::uint64_t));
+        detail::UniformIntDistribution<TyVal> dist(min, max);
         return static_cast<TyVal>(dist(detail::prng));
     }
 
