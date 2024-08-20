@@ -133,9 +133,6 @@ namespace logger {
             typename Ty::allocator_type;
             requires std::is_same_v<Ty, std::basic_string<typename Ty::value_type, typename Ty::traits_type, typename Ty::allocator_type>>;
         };
-        template <typename T> concept char_str_view_t = std::is_same_v<T, std::string_view> || std::is_same_v<T, const char*>;
-        template <typename T> concept wchar_str_view_t = std::is_same_v<T, std::wstring_view> || std::is_same_v<T, const wchar_t*>;
-        template <typename T> concept str_view_t = char_str_view_t<T> || wchar_str_view_t<T>;
 
         /// The main method that would be used to log lines
         ///
@@ -172,6 +169,7 @@ namespace logger {
             std::conditional_t<IsWide, std::wistringstream, std::istringstream> stream(msg);
             for (Ty line; std::getline(stream, line);) {
                 if (show_timestamps) {
+#if __cpp_lib_chrono >= 201907L
                     static auto zone = std::chrono::current_zone(); // surely it would not change
                     const auto now = std::chrono::zoned_time{zone, std::chrono::system_clock::now()};
                     const auto tm = now.get_local_time();
@@ -183,6 +181,16 @@ namespace logger {
                     const auto now_msec = std::chrono::duration_cast<std::chrono::milliseconds>(tm - now_sec).count();
 
                     std::cout << std::format("{:%H:%M:%S}.{:0>3}", now_sec, now_msec) << " | ";
+#else // Backporting for clang until the first 19.x version gets released
+                    const auto now = std::chrono::system_clock::now();
+                    const std::time_t time_now = std::chrono::system_clock::to_time_t(now);
+                    const std::tm now_tm = *std::localtime(&time_now);
+
+                    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
+
+                    std::cout << std::put_time(&now_tm, "%H:%M:%S.");
+                    std::cout << std::setfill('0') << std::setw(3) << milliseconds.count() << " | ";
+#endif
                 }
 
                 indent(indentation);
@@ -244,9 +252,9 @@ namespace logger {
         if_false<Indentation>(fmt, args...);                                                                   \
     }
 
-    MAKE_LOGGER_OR_METHOD(info_or_warn, info, warn);
-    MAKE_LOGGER_OR_METHOD(info_or_error, info, error);
-    MAKE_LOGGER_OR_METHOD(info_or_critical, info, critical);
+    MAKE_LOGGER_OR_METHOD(info_or_warn, info, warn)
+    MAKE_LOGGER_OR_METHOD(info_or_error, info, error)
+    MAKE_LOGGER_OR_METHOD(info_or_critical, info, critical)
 
 #undef MAKE_LOGGER_OR_METHOD
 } // namespace logger
