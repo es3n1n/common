@@ -112,6 +112,7 @@ if(COMMON_BUILD_TESTS) # common-build-tests
 		"src/tests/progress.cpp"
 		"src/tests/random.cpp"
 		"src/tests/string_parser.cpp"
+		"src/tests/traits.cpp"
 		"src/tests/types.cpp"
 		cmake.toml
 	)

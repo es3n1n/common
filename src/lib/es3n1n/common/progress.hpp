@@ -1,7 +1,7 @@
 #pragma once
+#include "base.hpp"
 #include "logger.hpp"
 #include "stopwatch.hpp"
-#include "structs.hpp"
 
 namespace progress {
     /// \brief Progress-bar object

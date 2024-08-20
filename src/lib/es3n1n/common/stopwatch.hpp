@@ -1,5 +1,5 @@
 #pragma once
-#include "structs.hpp"
+#include "base.hpp"
 #include <chrono>
 
 namespace stopwatch {
