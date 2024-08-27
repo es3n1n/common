@@ -37,7 +37,7 @@ namespace memory {
         }
 
         std::expected<address, e_error_code> write(const void* buffer, const std::size_t size) {
-            if (auto result = memory::write(address_, buffer, size); !result.has_value()) {
+            if (auto result = memory::reader.write(address_, buffer, size); !result.has_value()) {
                 return std::unexpected(result.error());
             }
 
@@ -48,7 +48,7 @@ namespace memory {
         std::expected<address, e_error_code> write(Ty value) {
             auto copy = std::move(value);
 
-            if (auto ret = memory::write(&copy, address_); !ret.has_value()) {
+            if (auto ret = memory::reader.write(&copy, address_); !ret.has_value()) {
                 return std::unexpected(ret.error());
             }
 
@@ -57,12 +57,12 @@ namespace memory {
 
         template <typename Ty>
         [[nodiscard]] std::expected<Ty, e_error_code> read() const {
-            return memory::read<Ty>(address_);
+            return memory::reader.read<Ty>(address_);
         }
 
         template <typename Ty>
         std::expected<Ty*, e_error_code> read(Ty* dst) const {
-            if (auto result = memory::read(dst, address_); !result.has_value()) {
+            if (auto result = memory::reader.read(dst, address_); !result.has_value()) {
                 return std::unexpected(result.error());
             }
 
@@ -73,7 +73,7 @@ namespace memory {
             std::vector<std::uint8_t> result = {};
             result.resize(size);
 
-            if (auto stat = memory::read(result.data(), address_, size); !stat.has_value()) {
+            if (auto stat = memory::reader.read(result.data(), address_, size); !stat.has_value()) {
                 return std::unexpected(stat.error());
             }
 
@@ -82,7 +82,7 @@ namespace memory {
 
         template <typename T = address>
         [[nodiscard]] std::expected<T, e_error_code> deref() const {
-            auto result = memory::read<T>(inner());
+            auto result = memory::reader.read<T>(inner());
 
             if (!result.has_value()) {
                 return std::unexpected(result.error());
