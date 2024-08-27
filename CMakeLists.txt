@@ -110,6 +110,7 @@ if(COMMON_BUILD_TESTS) # common-build-tests
 		"src/tests/logger.cpp"
 		"src/tests/memory/address.cpp"
 		"src/tests/memory/range.cpp"
+		"src/tests/memory/reader.cpp"
 		"src/tests/platform.cpp"
 		"src/tests/progress.cpp"
 		"src/tests/random.cpp"
