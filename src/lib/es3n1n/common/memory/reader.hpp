@@ -9,7 +9,8 @@
 
 namespace memory {
     enum class e_error_code : std::uint8_t {
-        INVALID_PARAMETERS = 0,
+        UNKNOWN_ERROR = 0,
+        INVALID_PARAMETERS,
         INVALID_ADDRESS,
         NOT_ENOUGH_BYTES,
     };
