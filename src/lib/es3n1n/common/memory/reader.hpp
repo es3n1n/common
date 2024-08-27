@@ -51,18 +51,18 @@ namespace memory {
     /// Memory reader implementation
     class Reader : public base::NonCopyable {
     public:
-        constexpr Reader(): m_read_primitive_(default_read), m_write_primitive_(default_write) { }
+        constexpr Reader(): read_primitive_(default_read), write_primitive_(default_write) { }
 
         void read_primitive(read_primitive_t read_func) {
-            m_read_primitive_ = read_func;
+            read_primitive_ = read_func;
         }
 
         void write_primitive(write_primitive_t write_func) {
-            m_write_primitive_ = write_func;
+            write_primitive_ = write_func;
         }
 
         std::expected<std::size_t, e_error_code> read(void* buffer, const std::uintptr_t address, const std::size_t size) const {
-            return m_read_primitive_(buffer, address, size);
+            return read_primitive_(buffer, address, size);
         }
 
         template <traits::trivially_copyable Ty>
@@ -82,7 +82,7 @@ namespace memory {
         }
 
         std::expected<std::size_t, e_error_code> write(std::uintptr_t address, const void* buffer, const std::size_t size) const {
-            return m_write_primitive_(address, buffer, size);
+            return write_primitive_(address, buffer, size);
         }
 
         template <traits::trivially_copyable Ty>
@@ -91,8 +91,8 @@ namespace memory {
         }
 
     private:
-        read_primitive_t m_read_primitive_;
-        write_primitive_t m_write_primitive_;
+        read_primitive_t read_primitive_;
+        write_primitive_t write_primitive_;
     };
 
     /// Shared reader instance
