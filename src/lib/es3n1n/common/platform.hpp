@@ -115,3 +115,10 @@ namespace platform {
         #include <Windows.h>
     #endif
 #endif
+
+/// Compiler-specific definitions
+#if PLATFORM_IS_MSVC
+    #define COMMON_FORCE_INLINE __forceinline
+#else
+    #define COMMON_FORCE_INLINE inline __attribute__((always_inline))
+#endif
