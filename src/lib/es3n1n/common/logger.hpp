@@ -64,13 +64,17 @@ namespace logger {
         /// \todo: @es3n1n: maybe add font_style too?
         ///
         inline void apply_style(const std::uint8_t foreground, const std::uint8_t background, const std::function<void()>& callback) noexcept {
-#if PLATFORM_IS_WIN
             static std::once_flag once_flag;
 
-            /// In order to use ANSI escape sequences we should make sure that we've activated virtual
-            /// terminal before using them
-            ///
             std::call_once(once_flag, []() -> void {
+                /// Disabling stdout buffering
+                std::ios::sync_with_stdio(false);
+                std::setvbuf(stdout, nullptr, _IONBF, 0);
+
+                /// In order to use ANSI escape sequences on windows, we should make sure that
+                /// we've activated virtual terminal
+
+#if PLATFORM_IS_WIN
                 const auto console_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 
                 if (console_handle == nullptr) {
@@ -98,8 +102,8 @@ namespace logger {
                         colors_enabled = false;
                     }
                 }
-            });
 #endif
+            });
 
             /// Applying style
             ///
