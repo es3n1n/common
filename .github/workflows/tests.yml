@@ -3,6 +3,7 @@ name: Tests
 on:
   pull_request:
     paths:
+      - '.github/**'
       - 'cmake/**'
       - 'src/**'
       - 'CMakeLists.txt'
@@ -10,6 +11,7 @@ on:
     branches:
       - master
     paths:
+      - '.github/**'
       - 'cmake/**'
       - 'src/**'
       - 'CMakeLists.txt'
