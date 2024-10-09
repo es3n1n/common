@@ -43,4 +43,14 @@ jobs:
       - name: Run clang tidy
         run: |
           wget https://raw.githubusercontent.com/llvm/llvm-project/refs/heads/release/19.x/clang-tools-extra/clang-tidy/tool/run-clang-tidy.py
-          python3 run-clang-tidy.py -clang-tidy-binary clang-tidy-19 -p build -j 12 -extra-arg="-std=c++23" -extra-arg="-stdlib=libc++" -q
+          # We dont need to analyze gbenchmark
+          echo "Checks: '-*'" > build/_deps/gbenchmark-src/.clang-tidy
+          python3 run-clang-tidy.py \
+            -clang-tidy-binary clang-tidy-19 \
+            -p build \
+            -j 12 \
+            -extra-arg="-std=c++23" \
+            -extra-arg="-stdlib=libc++" \
+            -header-filter="src/lib|src/tests|src/benchmark" \
+            -q \
+            -allow-no-checks
