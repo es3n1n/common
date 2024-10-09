@@ -1,4 +1,4 @@
-# es3n1n's clang-tidy -- 01 feb 2024 20:11:04 -- https://pastebin.com/Zqj501X6
+# es3n1n's clang-tidy -- 09 oct 2024 19:56:40 -- https://pastebin.com/Zqj501X6
 Checks: >
     bugprone-*,
     cert-*,
@@ -30,7 +30,6 @@ Checks: >
     -readability-identifier-length,
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
-AnalyzeTemporaryDtors: false
 FormatStyle: file
 CheckOptions:
     - key: 'cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic'
