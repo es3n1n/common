@@ -34,18 +34,15 @@ condition = "common-build-benchmarks"
 [target.common-project]
 alias = "es3n1n::common::project"
 type = "interface"
+compile-features = ["cxx_std_23"]
 msvc.compile-options = ["/MP"]
 cmake-after = """
 if(UNIX)
     # Enforcing libc++ on clang
     if((CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND NOT CMAKE_CXX_COMPILER_FRONTEND_VARIANT MATCHES "^MSVC$") OR
         (CMAKE_C_COMPILER_ID MATCHES "Clang" AND NOT CMAKE_C_COMPILER_FRONTEND_VARIANT MATCHES "^MSVC$")) # clang
-        target_compile_options(common-project INTERFACE
-            -stdlib=libc++
-        )
-        target_link_libraries(common-project INTERFACE
-            -stdlib=libc++
-        )
+        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++" CACHE STRING "" FORCE)
     endif()
 endif()
 """

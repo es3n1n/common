@@ -55,14 +55,19 @@ jobs:
           sudo apt-get install -yq --no-install-recommends gcc-13 g++-13 libstdc++-13-dev
 
       - name: Prepare build
+        if: contains(matrix.os, 'ubuntu')
         run: |
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
             cmake -B build -DCMAKE_C_COMPILER=gcc-13 -DCMAKE_CXX_COMPILER=g++-13 DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCOMMON_BUILD_TESTS=ON -DCMKR_SKIP_GENERATION=ON
           elif [ "${{ matrix.compiler }}" = "clang" ]; then
             cmake -B build -DCMAKE_C_COMPILER=clang-19 -DCMAKE_CXX_COMPILER=clang++-19 -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCOMMON_BUILD_TESTS=ON -DCMKR_SKIP_GENERATION=ON
           else
-            cmake -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCOMMON_BUILD_TESTS=ON -DCMKR_SKIP_GENERATION=ON
+            exit 1
           fi
+
+      - name: Prepare build (Windows)
+        if: contains(matrix.os, 'windows')
+        run: cmake -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCOMMON_BUILD_TESTS=ON -DCMKR_SKIP_GENERATION=ON
 
       - name: Build
         run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
