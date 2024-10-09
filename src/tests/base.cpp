@@ -18,7 +18,6 @@ static_assert(std::is_copy_constructible_v<TestCopyable>);
 static_assert(std::is_copy_assignable_v<TestCopyable>);
 
 struct non_copyable_t : public base::NonCopyable {
-public:
     non_copyable_t() = default;
 };
 
@@ -26,7 +25,6 @@ static_assert(!std::is_copy_constructible_v<non_copyable_t>);
 static_assert(!std::is_copy_assignable_v<non_copyable_t>);
 
 struct copyable_t {
-public:
     copyable_t() = default;
 };
 

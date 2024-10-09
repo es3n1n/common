@@ -167,9 +167,9 @@ namespace memory {
             return static_cast<bool>(address_);
         }
 
-#define MATH_OPERATOR(type, operation)                             \
-    constexpr type operator operation(const address& rhs) const {  \
-        return static_cast<type>(address_ operation rhs.address_); \
+#define MATH_OPERATOR(type, operation) /* NOLINT(ppcoreguidelines-macro-usage) */                          \
+    constexpr type operator operation(const address& rhs) const { /* NOLINT(bugprone-macro-parentheses) */ \
+        return static_cast<type>(address_ operation rhs.address_);                                         \
     }
 
         MATH_OPERATOR(bool, ==)

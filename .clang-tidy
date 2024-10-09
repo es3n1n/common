@@ -18,6 +18,7 @@ Checks: >
     -bugprone-easily-swappable-parameters,
     -cert-err58-cpp,
     -cppcoreguidelines-avoid-do-while,
+    -cppcoreguidelines-avoid-non-const-global-variables,
     -cppcoreguidelines-non-private-member-variables-in-classes,
     -cppcoreguidelines-pro-bounds-pointer-arithmetic,
     -cppcoreguidelines-pro-type-reinterpret-cast,

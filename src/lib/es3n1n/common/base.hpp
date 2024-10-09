@@ -8,5 +8,6 @@ namespace base {
         NonCopyable& operator=(const NonCopyable&) = delete;
         NonCopyable(NonCopyable&&) = delete;
         NonCopyable& operator=(NonCopyable&&) = delete;
+        ~NonCopyable() = default;
     };
 } // namespace base

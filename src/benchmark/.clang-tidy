@@ -1,0 +1,4 @@
+Checks: >
+  -clang-analyzer-deadcode.DeadStores
+  -cppcoreguidelines-avoid-magic-numbers,
+  -readability-magic-numbers,

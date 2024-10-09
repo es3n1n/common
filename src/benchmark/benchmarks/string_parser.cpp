@@ -6,7 +6,7 @@ namespace {
         const std::string test_input = "-12345678";
 
         for (auto _ : state) {
-            const auto result = string_parser::parse_int32(test_input);
+            auto result = string_parser::parse_int32(test_input);
             benchmark::DoNotOptimize(result);
         }
     }
@@ -16,7 +16,7 @@ namespace {
         const std::string test_input = "12345678";
 
         for (auto _ : state) {
-            const auto result = string_parser::parse_uint32(test_input);
+            auto result = string_parser::parse_uint32(test_input);
             benchmark::DoNotOptimize(result);
         }
     }
@@ -26,7 +26,7 @@ namespace {
         const std::string test_input = "123";
 
         for (auto _ : state) {
-            const auto result = string_parser::parse_int8(test_input);
+            auto result = string_parser::parse_int8(test_input);
             benchmark::DoNotOptimize(result);
         }
     }
