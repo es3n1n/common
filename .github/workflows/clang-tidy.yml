@@ -16,6 +16,10 @@ on:
       - 'src/**'
       - 'CMakeLists.txt'
 
+permissions:
+  checks: write
+  pull-requests: write
+
 jobs:
   test_cxx:
     name: Run
