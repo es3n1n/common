@@ -16,10 +16,6 @@ on:
       - 'src/**'
       - 'CMakeLists.txt'
 
-permissions:
-  checks: write
-  pull-requests: write
-
 jobs:
   test_cxx:
     name: Run
@@ -27,16 +23,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: ZedThree/clang-tidy-review@v0.19.0
-        id: review
+      - name: Setup clang and libc++
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 19
+          sudo apt-get install -yq --no-install-recommends libc++-19-dev libc++abi-19-dev clang-tidy-19
+          echo "CC=clang-19" >> $GITHUB_ENV
+          echo "CXX=clang++-19" >> $GITHUB_ENV
+
+      - name: Generate build
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCOMMON_BUILD_TESTS=ON -DCOMMON_BUILD_BENCHMARKS=ON -DCMKR_SKIP_GENERATION=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          lgtm_comment_body: ''
-          build_dir: 'build'
-          clang_tidy_version: 18
-          cmake_command: 'cmake . -B build -DCOMMON_BUILD_TESTS=ON -DCOMMON_BUILD_BENCHMARKS=ON -DCMKR_SKIP_GENERATION=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON'
+          python-version: 3.11
 
-      - uses: ZedThree/clang-tidy-review/upload@v0.19.0
-        id: upload-review
-
-      - if: steps.review.outputs.total_comments > 0
-        run: exit 1
+      - name: Run clang tidy
+        run: |
+          wget https://raw.githubusercontent.com/llvm/llvm-project/refs/heads/release/19.x/clang-tools-extra/clang-tidy/tool/run-clang-tidy.py
+          python3 run-clang-tidy.py -clang-tidy-binary clang-tidy-19 -p build -j 12 -extra-arg="-std=c++23" -extra-arg="-stdlib=libc++" -q
