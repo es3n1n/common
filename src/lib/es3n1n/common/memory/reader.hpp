@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <cstring>
 #include <expected>
 #include <functional>
 #include <type_traits>
