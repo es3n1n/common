@@ -1,0 +1,35 @@
+name: clang-tidy
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/clang-tidy.yml'
+      - 'cmake/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/clang-tidy.yml'
+      - 'cmake/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+
+jobs:
+  test_cxx:
+    name: Run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ZedThree/clang-tidy-review@v0.19.0
+        id: review
+        with:
+          clang_tidy_version: 18
+
+      - uses: ZedThree/clang-tidy-review/upload@v0.19.0
+        id: upload-review
+
+      - if: steps.review.outputs.total_comments > 0
+        run: exit 1
