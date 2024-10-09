@@ -53,8 +53,10 @@ jobs:
         if: contains(matrix.os, 'ubuntu') && matrix.compiler == 'gcc'
         run: |
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          sudo add-apt-repository ppa:apt-fast/stable
           sudo apt-get update
-          sudo apt-get install -yq --no-install-recommends gcc-13 g++-13 libstdc++-13-dev
+          sudo apt-get install -yq --no-install-recommends apt-fast
+          sudo apt-fast install -yq --no-install-recommends gcc-13 g++-13 libstdc++-13-dev
           echo "CC=gcc-13" >> $GITHUB_ENV
           echo "CXX=g++-13" >> $GITHUB_ENV
 
