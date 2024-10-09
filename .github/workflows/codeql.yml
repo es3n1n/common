@@ -32,7 +32,21 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: c-cpp
-          build-mode: autobuild
+          build-mode: manual
+
+      - name: Setup clang and libc++
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 19
+          sudo apt-get install -yq --no-install-recommends libc++-19-dev libc++abi-19-dev
+          echo "CC=clang-19" >> $GITHUB_ENV
+          echo "CXX=clang++-19" >> $GITHUB_ENV
+
+      - name: Build
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCOMMON_BUILD_TESTS=ON -DCMKR_SKIP_GENERATION=ON
+          cmake --build build --config Release --parallel
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
