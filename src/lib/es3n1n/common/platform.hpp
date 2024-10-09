@@ -1,5 +1,5 @@
 #pragma once
-#include <numeric>
+#include <limits>
 
 /// Systems
 ///
