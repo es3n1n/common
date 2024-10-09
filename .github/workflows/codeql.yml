@@ -1,0 +1,40 @@
+name: CodeQL
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/codeql.yml'
+      - 'cmake/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/codeql.yml'
+      - 'cmake/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+
+jobs:
+  test_cxx:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: c-cpp
+          build-mode: autobuild
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:c-cpp"
