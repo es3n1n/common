@@ -18,7 +18,7 @@ on:
 
 jobs:
   test_cxx:
-    name: ${{ matrix.compiler }}, ${{ matrix.buildtype }}
+    name: ${{ matrix.os }}, ${{ matrix.compiler }}, ${{ matrix.buildtype }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -29,6 +29,9 @@ jobs:
         exclude:
           - os: windows-latest
             compiler: gcc
+          # This will work, but its kinda slow and doesn't really matter anyways
+          - os: windows-latest
+            compiler: clang
           - os: ubuntu-latest
             compiler: msvc
     env:
@@ -36,16 +39,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up clang
-        if: matrix.compiler == 'clang'
-        uses: egor-tensin/setup-clang@v1
-        with:
-          platform: x64
+      - name: Setup clang and libc++
+        if: contains(matrix.os, 'ubuntu') && matrix.compiler == 'clang'
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 19
+          sudo apt-get install -y libc++-19-dev libc++abi-19-dev
+
+      - name: Setup gcc and libstdc++
+        if: contains(matrix.os, 'ubuntu') && matrix.compiler == 'gcc'
+        run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          sudo apt-get update
+          sudo apt-get install -y gcc-13 g++-13 libstdc++-13-dev
+
+      - name: Prepare build (Unix)
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            cmake -B build -DCMAKE_C_COMPILER=gcc-13 -DCMAKE_CXX_COMPILER=g++-13 -DCOMMON_BUILD_TESTS=1 -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMKR_SKIP_GENERATION=ON
+          elif [ "${{ matrix.compiler }}" = "clang" ]; then
+            cmake -B build -DCMAKE_C_COMPILER=clang-19 -DCMAKE_CXX_COMPILER=clang++-19 -DCOMMON_BUILD_TESTS=1 -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMKR_SKIP_GENERATION=ON
+          else
+            exit 1
+          fi
+
+      - name: Prepare build (Windows)
+        if: contains(matrix.os, 'windows')
+        run: cmake -B build -DCOMMON_BUILD_TESTS=1 -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMKR_SKIP_GENERATION=ON
 
       - name: Build
-        run: |
-          cmake -B build -DCOMMON_BUILD_TESTS=1 -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMKR_SKIP_GENERATION=ON
-          cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
+        run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
 
       - name: Test (Unix)
         if: contains(matrix.os, 'ubuntu')

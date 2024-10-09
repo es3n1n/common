@@ -81,24 +81,24 @@ target_include_directories(common INTERFACE
 add_library(common-project INTERFACE)
 
 add_library(es3n1n::common::project ALIAS common-project)
-if(UNIX) # unix
-	target_compile_options(common-project INTERFACE
-		-stdlib=libc++
-	)
-endif()
-
 if(MSVC) # msvc
 	target_compile_options(common-project INTERFACE
 		"/MP"
 	)
 endif()
 
-if(UNIX) # unix
-	target_link_options(common-project INTERFACE
-		-lc++
-		-lc++abi
-		-fuse-ld=lld
-	)
+set(CMKR_TARGET common-project)
+if(UNIX)
+    # Enforcing libc++ on clang
+    if((CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND NOT CMAKE_CXX_COMPILER_FRONTEND_VARIANT MATCHES "^MSVC$") OR
+        (CMAKE_C_COMPILER_ID MATCHES "Clang" AND NOT CMAKE_C_COMPILER_FRONTEND_VARIANT MATCHES "^MSVC$")) # clang
+        target_compile_options(common-project INTERFACE
+            -stdlib=libc++
+        )
+        target_link_libraries(common-project INTERFACE
+            -stdlib=libc++
+        )
+    endif()
 endif()
 
 # Target: common-tests

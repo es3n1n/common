@@ -34,9 +34,21 @@ condition = "common-build-benchmarks"
 [target.common-project]
 alias = "es3n1n::common::project"
 type = "interface"
-unix.compile-options = ["-stdlib=libc++"]
-unix.link-options = ["-lc++", "-lc++abi", "-fuse-ld=lld"]
 msvc.compile-options = ["/MP"]
+cmake-after = """
+if(UNIX)
+    # Enforcing libc++ on clang
+    if((CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND NOT CMAKE_CXX_COMPILER_FRONTEND_VARIANT MATCHES "^MSVC$") OR
+        (CMAKE_C_COMPILER_ID MATCHES "Clang" AND NOT CMAKE_C_COMPILER_FRONTEND_VARIANT MATCHES "^MSVC$")) # clang
+        target_compile_options(common-project INTERFACE
+            -stdlib=libc++
+        )
+        target_link_libraries(common-project INTERFACE
+            -stdlib=libc++
+        )
+    endif()
+endif()
+"""
 
 [target.common-tests]
 type = "executable"
