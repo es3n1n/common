@@ -38,16 +38,16 @@ constexpr bool ensure() {
     return true;
 }
 
-template <typename Lambda, std::size_t... Is>
-constexpr bool proceed(Lambda lambda, std::index_sequence<Is...>) {
-    return (ensure<Is, lambda()[Is]>() && ...);
+template <typename Ty, std::size_t... Is>
+constexpr bool check_impl(std::index_sequence<Is...>) {
+    return (ensure<Is, Ty::data()[Is]>() && ...);
 }
 
 template <types::ct_string_t Str>
-consteval auto operator""_ct() noexcept {
-    constexpr auto s = types::type_string_t<Str>{};
-    static_assert(Str.size() == 5);
-    return proceed([&]() constexpr { return s.data(); }, std::make_index_sequence<s.size()>{});
+consteval auto operator""_ct() {
+    using s = types::type_string_t<Str>;
+    static_assert(s::size() == 5);
+    return check_impl<s>(std::make_index_sequence<s::size()>{});
 }
 
 static_assert("Hello"_ct);
