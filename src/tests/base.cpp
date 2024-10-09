@@ -1,7 +1,6 @@
 #include "es3n1n/common/base.hpp"
 #include <type_traits>
 
-
 class TestNonCopyable : public base::NonCopyable {
 public:
     TestNonCopyable() = default;
