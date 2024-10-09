@@ -8,14 +8,14 @@ namespace numeric {
     struct flt_range_t {
         /// \brief Init a range with desired value
         /// \param value a value in ranges (0.F to 1.F)
-        /* implicit */ constexpr flt_range_t(const float value): value(value) { }
+        /* implicit */ constexpr flt_range_t(const float value): value(value) { } // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
 
         /// \brief Prevent implicit conversion from uint8_t
         explicit constexpr flt_range_t(uint8_t value) = delete;
 
         /// \brief Implicitly convert range to the float
         /// \return floating point value from 0.F to 1.F
-        /* implicit */ constexpr operator float() const {
+        /* implicit */ constexpr operator float() const { // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
             return value;
         }
 

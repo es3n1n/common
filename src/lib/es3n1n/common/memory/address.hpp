@@ -17,10 +17,12 @@ namespace memory {
         constexpr address() = default;
 
         /// Implicit conversions ftw
-        /* implicit */ constexpr address(const std::nullptr_t) { }
-        /* implicit */ constexpr address(const uintptr_t address): address_(address) { }
-        /* implicit */ address(const void* address): address_(reinterpret_cast<uintptr_t>(address)) { }
-        /* implicit */ address(const std::vector<std::uint8_t>& data): address_(reinterpret_cast<uintptr_t>(data.data())) { }
+        constexpr /* implicit */ address(const std::nullptr_t) { } // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
+        constexpr /* implicit */ address(const uintptr_t address): address_(address) { } // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
+        /* implicit */ address(const void* address) // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
+            : address_(reinterpret_cast<uintptr_t>(address)) { }
+        /* implicit */ address(const std::vector<std::uint8_t>& data) // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
+            : address_(reinterpret_cast<uintptr_t>(data.data())) { }
 
         address(const address& inst) = default;
         address(address&& inst) = default;
