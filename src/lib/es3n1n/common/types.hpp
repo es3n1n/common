@@ -19,16 +19,16 @@ namespace types {
         }
     };
 
-    template <size_t Footprint>
+    template <size_t N>
     struct ct_string_t {
-        char data[Footprint]{};
+        std::array<char, N> data{};
 
         [[nodiscard]] constexpr size_t size() const {
-            return Footprint - 1;
+            return N - 1;
         }
 
-        constexpr ct_string_t(const char (&init)[Footprint]) {
-            std::copy_n(init, Footprint, data);
+        constexpr /* implicit */ ct_string_t(const char (&init)[N]) {
+            std::copy_n(init, N, data.begin());
         }
     };
 
@@ -36,7 +36,7 @@ namespace types {
         requires std::is_same_v<std::remove_cvref_t<decltype(str)>, ct_string_t<str.size() + 1>>
     struct type_string_t {
         static constexpr const char* data() {
-            return str.data;
+            return str.data.data();
         }
 
         static constexpr size_t size() {

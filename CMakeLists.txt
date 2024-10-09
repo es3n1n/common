@@ -27,6 +27,9 @@ endif()
 # Options
 option(COMMON_BUILD_TESTS "" OFF)
 option(COMMON_BUILD_BENCHMARKS "" OFF)
+option(BENCHMARK_ENABLE_TESTING "" OFF)
+option(BENCHMARK_ENABLE_GTEST_TESTS "" OFF)
+option(BENCHMARK_USE_BUNDLED_GTEST "" OFF)
 
 project(common
 	LANGUAGES
@@ -40,6 +43,14 @@ if(POLICY CMP0135)
 	cmake_policy(SET CMP0135 NEW)
 endif()
 if(COMMON_BUILD_TESTS) # common-build-tests
+	if(UNIX AND
+	    CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND NOT
+	    CMAKE_CXX_COMPILER_FRONTEND_VARIANT MATCHES "^MSVC$") # clang
+	    message(STATUS "Enforcing libc++ for clang")
+	    # FIXME(es3n1n): This looks somewhat disturbing, but hey at least it works
+	    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+	endif()
+
 	message(STATUS "Fetching GTest (v1.15.2)...")
 	FetchContent_Declare(GTest SYSTEM
 		GIT_REPOSITORY
@@ -81,23 +92,13 @@ target_include_directories(common INTERFACE
 add_library(common-project INTERFACE)
 
 add_library(es3n1n::common::project ALIAS common-project)
-if(UNIX) # unix
-	target_compile_options(common-project INTERFACE
-		-stdlib=libc++
-	)
-endif()
+target_compile_features(common-project INTERFACE
+	cxx_std_23
+)
 
 if(MSVC) # msvc
 	target_compile_options(common-project INTERFACE
 		"/MP"
-	)
-endif()
-
-if(UNIX) # unix
-	target_link_options(common-project INTERFACE
-		-lc++
-		-lc++abi
-		-fuse-ld=lld
 	)
 endif()
 

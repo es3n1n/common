@@ -1,0 +1,54 @@
+name: CodeQL
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/codeql.yml'
+      - 'cmake/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/codeql.yml'
+      - 'cmake/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+
+jobs:
+  test_cxx:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: c-cpp
+          build-mode: manual
+
+      - name: Setup clang and libc++
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 19
+          sudo apt-get install -yq --no-install-recommends libc++-19-dev libc++abi-19-dev
+          echo "CC=clang-19" >> $GITHUB_ENV
+          echo "CXX=clang++-19" >> $GITHUB_ENV
+
+      - name: Build
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCOMMON_BUILD_TESTS=ON -DCMKR_SKIP_GENERATION=ON
+          cmake --build build --config Release --parallel
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:c-cpp"

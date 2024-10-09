@@ -9,6 +9,9 @@ languages = ["CXX"]
 [options]
 COMMON_BUILD_TESTS = false
 COMMON_BUILD_BENCHMARKS = false
+BENCHMARK_ENABLE_TESTING = false
+BENCHMARK_ENABLE_GTEST_TESTS = false
+BENCHMARK_USE_BUNDLED_GTEST = false
 
 [conditions]
 common-build-tests = "COMMON_BUILD_TESTS"
@@ -25,6 +28,15 @@ include-directories = ["src/lib/"]
 git = "https://github.com/google/googletest"
 tag = "v1.15.2"
 condition = "common-build-tests"
+cmake-before = """
+if(UNIX AND
+    CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND NOT
+    CMAKE_CXX_COMPILER_FRONTEND_VARIANT MATCHES "^MSVC$") # clang
+    message(STATUS "Enforcing libc++ for clang")
+    # FIXME(es3n1n): This looks somewhat disturbing, but hey at least it works
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+endif()
+"""
 
 [fetch-content.GBenchmark]
 git = "https://github.com/google/benchmark"
@@ -34,8 +46,7 @@ condition = "common-build-benchmarks"
 [target.common-project]
 alias = "es3n1n::common::project"
 type = "interface"
-unix.compile-options = ["-stdlib=libc++"]
-unix.link-options = ["-lc++", "-lc++abi", "-fuse-ld=lld"]
+compile-features = ["cxx_std_23"]
 msvc.compile-options = ["/MP"]
 
 [target.common-tests]

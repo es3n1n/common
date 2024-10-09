@@ -17,10 +17,12 @@ namespace memory {
         constexpr address() = default;
 
         /// Implicit conversions ftw
-        /* implicit */ constexpr address(const std::nullptr_t) { }
-        /* implicit */ constexpr address(const uintptr_t address): address_(address) { }
-        /* implicit */ address(const void* address): address_(reinterpret_cast<uintptr_t>(address)) { }
-        /* implicit */ address(const std::vector<std::uint8_t>& data): address_(reinterpret_cast<uintptr_t>(data.data())) { }
+        constexpr /* implicit */ address(const std::nullptr_t) { } // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
+        constexpr /* implicit */ address(const uintptr_t address): address_(address) { } // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
+        /* implicit */ address(const void* address) // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
+            : address_(reinterpret_cast<uintptr_t>(address)) { }
+        /* implicit */ address(const std::vector<std::uint8_t>& data) // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
+            : address_(reinterpret_cast<uintptr_t>(data.data())) { }
 
         address(const address& inst) = default;
         address(address&& inst) = default;
@@ -129,11 +131,11 @@ namespace memory {
             return result;
         }
 
-        [[nodiscard]] constexpr address align_down(const std::ptrdiff_t factor) const noexcept {
+        [[nodiscard]] constexpr address align_down(const std::size_t factor) const noexcept {
             return {address_ & ~(factor - 1U)};
         }
 
-        [[nodiscard]] constexpr address align_up(const std::ptrdiff_t factor) const noexcept {
+        [[nodiscard]] constexpr address align_up(const std::size_t factor) const noexcept {
             return address{address_ + factor - 1U}.align_down(factor);
         }
 
@@ -165,9 +167,9 @@ namespace memory {
             return static_cast<bool>(address_);
         }
 
-#define MATH_OPERATOR(type, operation)                             \
-    constexpr type operator operation(const address& rhs) const {  \
-        return static_cast<type>(address_ operation rhs.address_); \
+#define MATH_OPERATOR(type, operation) /* NOLINT(ppcoreguidelines-macro-usage) */                          \
+    constexpr type operator operation(const address& rhs) const { /* NOLINT(bugprone-macro-parentheses) */ \
+        return static_cast<type>(address_ operation rhs.address_);                                         \
     }
 
         MATH_OPERATOR(bool, ==)
