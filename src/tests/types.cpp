@@ -18,10 +18,10 @@ TEST(types, basics) {
     EXPECT_EQ(v[2], 7);
 }
 
-template <int> concept always_false_i_v = false;
+template <std::size_t I, char C> concept always_false_v = false;
 
-template <size_t I, char C>
-static constexpr bool ensure() {
+template <std::size_t I, char C>
+constexpr bool ensure() {
     if constexpr (I == 0) {
         static_assert(C == 'H');
     } else if constexpr (I == 1) {
@@ -33,21 +33,20 @@ static constexpr bool ensure() {
     } else if constexpr (I == 4) {
         static_assert(C == 'o');
     } else {
-        static_assert(always_false_i_v<I> && always_false_i_v<C>);
+        static_assert(always_false_v<I, C>);
     }
     return true;
 }
 
-template <class Lambda, size_t... I>
-constexpr bool proceed(Lambda lambda [[maybe_unused]], std::index_sequence<I...>) {
-    return (ensure<I, lambda()[I]>() && ...);
+template <typename Lambda, std::size_t... Is>
+constexpr bool proceed(Lambda lambda, std::index_sequence<Is...>) {
+    return (ensure<Is, lambda()[Is]>() && ...);
 }
 
-template <types::ct_string_t str>
+template <types::ct_string_t Str>
 consteval auto operator""_ct() noexcept {
-    constexpr auto s = types::type_string_t<str>{};
-    static_assert(str.size() == s.size());
-    static_assert(str.size() == 5);
+    constexpr auto s = types::type_string_t<Str>{};
+    static_assert(Str.size() == 5);
     return proceed([&]() constexpr { return s.data(); }, std::make_index_sequence<s.size()>{});
 }
 

@@ -6,8 +6,7 @@ namespace {
         const std::string test_input = "-12345678";
 
         for (auto _ : state) {
-            auto result = string_parser::parse_int32(test_input);
-            benchmark::DoNotOptimize(result);
+            volatile auto result = string_parser::parse_int32(test_input);
         }
     }
     BENCHMARK(bm_parse_int32);
@@ -16,8 +15,7 @@ namespace {
         const std::string test_input = "12345678";
 
         for (auto _ : state) {
-            auto result = string_parser::parse_uint32(test_input);
-            benchmark::DoNotOptimize(result);
+            volatile auto result = string_parser::parse_uint32(test_input);
         }
     }
     BENCHMARK(bm_parse_uint32);
@@ -26,8 +24,7 @@ namespace {
         const std::string test_input = "123";
 
         for (auto _ : state) {
-            auto result = string_parser::parse_int8(test_input);
-            benchmark::DoNotOptimize(result);
+            volatile auto result = string_parser::parse_int8(test_input);
         }
     }
     BENCHMARK(bm_parse_int8);
@@ -36,8 +33,7 @@ namespace {
         const std::string test_input = "123";
 
         for (auto _ : state) {
-            const auto result = string_parser::parse_uint8(test_input);
-            benchmark::DoNotOptimize(result);
+            volatile auto result = string_parser::parse_uint8(test_input);
         }
     }
     BENCHMARK(bm_parse_uint8);
@@ -48,8 +44,7 @@ namespace {
         const std::string test_input = "-0x12345678";
 
         for (auto _ : state) {
-            const auto result = string_parser::parse_int32(test_input, 16);
-            benchmark::DoNotOptimize(result);
+            volatile auto result = string_parser::parse_int32(test_input, 16);
         }
     }
     BENCHMARK(bm_parse_int32_hex);
@@ -58,8 +53,7 @@ namespace {
         const std::string test_input = "0x12345678";
 
         for (auto _ : state) {
-            const auto result = string_parser::parse_uint32(test_input, 16);
-            benchmark::DoNotOptimize(result);
+            volatile auto result = string_parser::parse_uint32(test_input, 16);
         }
     }
     BENCHMARK(bm_parse_uint32_hex);
@@ -68,8 +62,7 @@ namespace {
         const std::string test_input = "0x12";
 
         for (auto _ : state) {
-            const auto result = string_parser::parse_int8(test_input, 16);
-            benchmark::DoNotOptimize(result);
+            volatile auto result = string_parser::parse_int8(test_input, 16);
         }
     }
     BENCHMARK(bm_parse_int8_hex);
@@ -78,8 +71,7 @@ namespace {
         const std::string test_input = "0x12";
 
         for (auto _ : state) {
-            const auto result = string_parser::parse_uint8(test_input, 16);
-            benchmark::DoNotOptimize(result);
+            volatile auto result = string_parser::parse_uint8(test_input, 16);
         }
     }
     BENCHMARK(bm_parse_uint8_hex);
