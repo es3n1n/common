@@ -30,7 +30,10 @@ jobs:
       - uses: ZedThree/clang-tidy-review@v0.19.0
         id: review
         with:
+          lgtm_comment_body: ''
+          build_dir: 'build'
           clang_tidy_version: 18
+          cmake_command: 'cmake . -B build -DCOMMON_BUILD_TESTS=ON -DCOMMON_BUILD_BENCHMARKS=ON -DCMKR_SKIP_GENERATION=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON'
 
       - uses: ZedThree/clang-tidy-review/upload@v0.19.0
         id: upload-review
