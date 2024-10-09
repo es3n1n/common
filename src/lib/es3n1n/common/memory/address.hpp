@@ -131,11 +131,11 @@ namespace memory {
             return result;
         }
 
-        [[nodiscard]] constexpr address align_down(const std::ptrdiff_t factor) const noexcept {
+        [[nodiscard]] constexpr address align_down(const std::size_t factor) const noexcept {
             return {address_ & ~(factor - 1U)};
         }
 
-        [[nodiscard]] constexpr address align_up(const std::ptrdiff_t factor) const noexcept {
+        [[nodiscard]] constexpr address align_up(const std::size_t factor) const noexcept {
             return address{address_ + factor - 1U}.align_down(factor);
         }
 
