@@ -153,3 +153,42 @@ TEST(address, edge_cases) {
     EXPECT_EQ(max_addr.offset(1).inner(), 0);
     EXPECT_EQ(max_addr.align_up(2).inner(), 0);
 }
+
+TEST(address, bounds_checking) {
+    memory::address addr(0x1000);
+    EXPECT_TRUE(addr.is_in_range(memory::address(0x500), memory::address(0x1500)));
+    EXPECT_FALSE(addr.is_in_range(memory::address(0x1500), memory::address(0x2000)));
+}
+
+TEST(address, relative_addressing) {
+    memory::address addr1(0x1000);
+    memory::address addr2(0x1500);
+    EXPECT_EQ(addr1.distance_to(addr2), 0x500);
+    EXPECT_EQ(addr2.distance_to(addr1), -0x500);
+}
+
+TEST(address, endianness) {
+    uint32_t value = 0x12345678;
+    memory::address addr(&value);
+
+    EXPECT_EQ(addr.read_le<uint32_t>().value(), std::endian::native == std::endian::little ? 0x12345678 : 0x78563412);
+    EXPECT_EQ(addr.read_be<uint32_t>().value(), std::endian::native == std::endian::big ? 0x12345678 : 0x78563412);
+}
+
+TEST(address, bitwise_operations) {
+    memory::address addr1(0xFF00);
+    memory::address addr2(0x00FF);
+    EXPECT_EQ((addr1 & addr2).inner(), 0x0000);
+    EXPECT_EQ((addr1 | addr2).inner(), 0xFFFF);
+    EXPECT_EQ((addr1 ^ addr2).inner(), 0xFFFF);
+}
+
+TEST(address, string_conversion) {
+    memory::address addr(0x1234);
+    EXPECT_EQ(addr.to_string(), "0x1234");
+}
+
+TEST(address, alignment) {
+    EXPECT_TRUE(memory::address(0x1000).is_aligned(16));
+    EXPECT_FALSE(memory::address(0x1001).is_aligned(16));
+}

@@ -121,7 +121,39 @@ namespace memory {
             return cast<Ty>();
         }
 
-        constexpr explicit operator std::uintptr_t() const noexcept {
+        [[nodiscard]] bool is_in_range(const address& start, const address& end) const noexcept {
+            return *this >= start && *this < end;
+        }
+
+        [[nodiscard]] std::ptrdiff_t distance_to(const address& other) const noexcept {
+            return static_cast<std::ptrdiff_t>(other.address_ - address_);
+        }
+
+        template <std::integral Ty>
+        [[nodiscard]] std::expected<Ty, e_error_code> read_le() const {
+            auto result = read<Ty>();
+            if (!result) {
+                return result;
+            }
+            if constexpr (std::endian::native == std::endian::big) {
+                return std::byteswap(*result);
+            }
+            return result;
+        }
+
+        template <std::integral Ty>
+        [[nodiscard]] std::expected<Ty, e_error_code> read_be() const {
+            auto result = read<Ty>();
+            if (!result) {
+                return result;
+            }
+            if constexpr (std::endian::native == std::endian::little) {
+                return std::byteswap(*result);
+            }
+            return result;
+        }
+
+        [[nodiscard]] constexpr explicit operator std::uintptr_t() const noexcept {
             return address_;
         }
 
@@ -129,7 +161,7 @@ namespace memory {
             return address_;
         }
 
-        constexpr explicit operator bool() const noexcept {
+        [[nodiscard]] constexpr explicit operator bool() const noexcept {
             return static_cast<bool>(address_);
         }
 
@@ -146,12 +178,32 @@ namespace memory {
             return *this;
         }
 
-        constexpr address operator+(const address& rhs) const noexcept {
+        [[nodiscard]] constexpr address operator+(const address& rhs) const noexcept {
             return {address_ + rhs.address_};
         }
 
-        constexpr address operator-(const address& rhs) const noexcept {
+        [[nodiscard]] constexpr address operator-(const address& rhs) const noexcept {
             return {address_ - rhs.address_};
+        }
+
+        [[nodiscard]] constexpr address operator&(const address& other) const noexcept {
+            return {address_ & other.address_};
+        }
+
+        [[nodiscard]] constexpr address operator|(const address& other) const noexcept {
+            return {address_ | other.address_};
+        }
+
+        [[nodiscard]] constexpr address operator^(const address& other) const noexcept {
+            return {address_ ^ other.address_};
+        }
+
+        [[nodiscard]] std::string to_string() const {
+            return std::format("{:#x}", address_);
+        }
+
+        [[nodiscard]] bool is_aligned(std::size_t alignment) const noexcept {
+            return (address_ % alignment) == 0;
         }
 
     private:
