@@ -3,6 +3,7 @@
 #include <cstring>
 #include <expected>
 #include <functional>
+#include <optional>
 #include <type_traits>
 
 #include "es3n1n/common/base.hpp"
@@ -20,14 +21,26 @@ namespace memory {
     using read_primitive_t = std::expected<std::size_t, e_error_code> (*)(void*, std::uintptr_t, std::size_t);
     using write_primitive_t = std::expected<std::size_t, e_error_code> (*)(std::uintptr_t, const void*, std::size_t);
 
+    namespace detail {
+        inline std::optional<e_error_code> sanitize_parameters(const void* buffer, const std::uintptr_t address, const std::size_t size) {
+            if (buffer == nullptr || address == 0U) {
+                return e_error_code::INVALID_ADDRESS;
+            }
+            if (size == 0U) {
+                return e_error_code::INVALID_PARAMETERS;
+            }
+            return std::nullopt;
+        }
+    } // namespace detail
+
     /// Default read primitive
     /// \param buffer output buffer pointer
     /// \param address source address
     /// \param size number of bytes to read
     /// \return number of bytes read on success, error code on failure
     inline std::expected<std::size_t, e_error_code> default_read(void* buffer, const std::uintptr_t address, const std::size_t size) {
-        if (buffer == nullptr || address == 0U || size == 0U) {
-            return std::unexpected(e_error_code::INVALID_PARAMETERS);
+        if (auto err = detail::sanitize_parameters(buffer, address, size); err.has_value()) {
+            return std::unexpected(err.value());
         }
 
         // NOLINTNEXTLINE
@@ -41,8 +54,8 @@ namespace memory {
     /// \param size number of bytes to write
     /// \return number of bytes written on success, error code on failure
     inline std::expected<std::size_t, e_error_code> default_write(std::uintptr_t address, const void* buffer, const std::size_t size) {
-        if (buffer == nullptr || address == 0U || size == 0U) {
-            return std::unexpected(e_error_code::INVALID_PARAMETERS);
+        if (auto err = detail::sanitize_parameters(buffer, address, size); err.has_value()) {
+            return std::unexpected(err.value());
         }
 
         // NOLINTNEXTLINE
