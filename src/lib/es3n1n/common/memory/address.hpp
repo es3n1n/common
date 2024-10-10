@@ -167,21 +167,16 @@ namespace memory {
             return static_cast<bool>(address_);
         }
 
-#define MATH_OPERATOR(type, operation) /* NOLINT(ppcoreguidelines-macro-usage) */                          \
-    constexpr type operator operation(const address& rhs) const { /* NOLINT(bugprone-macro-parentheses) */ \
-        return static_cast<type>(address_ operation rhs.address_);                                         \
-    }
+        // \note: @annihilatorq: intentionally left with no return type, see #11
+        constexpr auto operator<=>(const address&) const = default;
 
-        MATH_OPERATOR(bool, ==)
-        MATH_OPERATOR(bool, !=)
-        MATH_OPERATOR(bool, >)
-        MATH_OPERATOR(bool, <)
-        MATH_OPERATOR(bool, <=)
-        MATH_OPERATOR(bool, >=)
-        MATH_OPERATOR(address, +)
-        MATH_OPERATOR(address, -)
+        constexpr address operator+(const address& rhs) const {
+            return static_cast<address>(address_ + rhs.address_);
+        }
 
-#undef MATH_OPERATOR
+        constexpr address operator-(const address& rhs) const {
+            return static_cast<address>(address_ - rhs.address_);
+        }
 
     private:
         std::uintptr_t address_ = 0;
