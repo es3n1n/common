@@ -3,156 +3,122 @@
 #include <cstdint>
 #include <expected>
 #include <format>
+#include <span>
 #include <vector>
 
+#include "es3n1n/common/traits.hpp"
 #include "reader.hpp"
-
-// \fixme: @es3n1n: this file is a mess
-// \todo: @es3n1n: add += -= operators
-// \todo: @es3n1n: add self_* funcs
 
 namespace memory {
     class address {
     public:
         constexpr address() = default;
 
-        /// Implicit conversions ftw
-        constexpr /* implicit */ address(const std::nullptr_t) { } // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
-        constexpr /* implicit */ address(const uintptr_t address): address_(address) { } // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
-        /* implicit */ address(const void* address) // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
-            : address_(reinterpret_cast<uintptr_t>(address)) { }
-        /* implicit */ address(const std::vector<std::uint8_t>& data) // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
-            : address_(reinterpret_cast<uintptr_t>(data.data())) { }
+        // NOLINTBEGIN(google-explicit-constructor, hicpp-explicit-conversions)
+        constexpr /* implicit */ address(std::nullptr_t) noexcept { }
+        constexpr /* implicit */ address(uintptr_t addr) noexcept: address_(addr) { }
+        /* implicit */ address(const void* addr) noexcept: address_(reinterpret_cast<uintptr_t>(addr)) { }
+        /* implitic */ address(const std::span<const std::uint8_t>& data) noexcept: address_(reinterpret_cast<uintptr_t>(data.data())) { }
+        // NOLINTEND(google-explicit-constructor, hicpp-explicit-conversions)
 
-        address(const address& inst) = default;
-        address(address&& inst) = default;
-        address& operator=(const address& inst) = default;
-        address& operator=(address&& inst) = default;
+        address(const address&) = default;
+        address(address&&) = default;
+        address& operator=(const address&) = default;
+        address& operator=(address&&) = default;
         ~address() = default;
 
-        [[nodiscard]] constexpr address offset(const std::ptrdiff_t offset = 0) const noexcept {
-            if (address_ == 0U) {
-                return *this;
-            }
-
-            return {address_ + offset};
+        [[nodiscard]] constexpr address offset(std::ptrdiff_t offset = 0) const noexcept {
+            return address_ == 0U ? *this : address{address_ + offset};
         }
 
-        std::expected<address, e_error_code> write(const void* buffer, const std::size_t size) {
-            if (auto result = memory::reader.write(address_, buffer, size); !result.has_value()) {
-                return std::unexpected(result.error());
-            }
-
-            return *this;
+        std::expected<address, e_error_code> write(const void* buffer, std::size_t size) {
+            return memory::reader.write(address_, buffer, size).transform([this](auto) { return *this; });
         }
 
-        template <typename Ty>
+        template <traits::trivially_copyable Ty>
         std::expected<address, e_error_code> write(Ty value) {
-            auto copy = std::move(value);
-
-            if (auto ret = memory::reader.write(&copy, address_); !ret.has_value()) {
-                return std::unexpected(ret.error());
-            }
-
-            return *this;
+            return memory::reader.write(&value, address_).transform([this](auto) { return *this; });
         }
 
-        template <typename Ty>
+        template <traits::trivially_copyable Ty>
         [[nodiscard]] std::expected<Ty, e_error_code> read() const {
             return memory::reader.read<Ty>(address_);
         }
 
-        template <typename Ty>
+        template <traits::trivially_copyable Ty>
         std::expected<Ty*, e_error_code> read(Ty* dst) const {
-            if (auto result = memory::reader.read(dst, address_); !result.has_value()) {
-                return std::unexpected(result.error());
-            }
-
-            return dst;
+            return memory::reader.read(dst, address_).transform([dst](auto) { return dst; });
         }
 
-        [[nodiscard]] std::expected<std::vector<std::uint8_t>, e_error_code> read_vector(const std::size_t size) const {
-            std::vector<std::uint8_t> result = {};
-            result.resize(size);
-
-            if (auto stat = memory::reader.read(result.data(), address_, size); !stat.has_value()) {
-                return std::unexpected(stat.error());
-            }
-
-            return result;
+        [[nodiscard]] std::expected<std::vector<std::uint8_t>, e_error_code> read_vector(std::size_t size) const {
+            std::vector<std::uint8_t> result(size);
+            return memory::reader.read(result.data(), address_, size).transform([&result](auto) { return result; });
         }
 
-        template <typename T = address>
-        [[nodiscard]] std::expected<T, e_error_code> deref() const {
-            auto result = memory::reader.read<T>(inner());
-
-            if (!result.has_value()) {
-                return std::unexpected(result.error());
-            }
-
-            return result.value();
+        template <traits::trivially_copyable Ty = address>
+        [[nodiscard]] std::expected<Ty, e_error_code> deref() const {
+            return memory::reader.read<Ty>(inner());
         }
 
-        template <typename T = address>
-        [[nodiscard]] std::expected<T, e_error_code> get(std::size_t count = 1) const noexcept {
+        template <traits::trivially_copyable Ty = address>
+        [[nodiscard]] std::expected<Ty, e_error_code> get(std::size_t count = 1) const noexcept {
             if (!address_ || count == 0) {
                 return std::unexpected(e_error_code::INVALID_ADDRESS);
             }
 
-            address _tmp = *this;
-            while (_tmp && count-- >= 2) {
-                auto deref_value = _tmp.deref();
-                if (!deref_value.has_value()) {
+            address tmp = *this;
+            for (std::size_t i = 1; i < count; ++i) {
+                auto deref_value = tmp.deref();
+                if (!deref_value) {
                     return std::unexpected(e_error_code::NOT_ENOUGH_BYTES);
                 }
-
-                _tmp = deref_value.value();
+                tmp = *deref_value;
             }
 
-            return _tmp.deref<T>();
+            return tmp.deref<Ty>();
         }
 
-        template <typename T = address>
-        [[nodiscard]] constexpr T* ptr(const std::ptrdiff_t offset = 0) const noexcept {
-            return this->offset(offset).as<std::add_pointer_t<T>>();
+        template <traits::trivially_copyable Ty = address>
+        [[nodiscard]] constexpr Ty* ptr(std::ptrdiff_t offset = 0) const noexcept {
+            return this->offset(offset).as<std::add_pointer_t<Ty>>();
         }
 
-        template <typename T = address>
-        [[nodiscard]] constexpr T* self_inc_ptr(const std::ptrdiff_t offset = 0) noexcept {
-            auto* result = ptr<T>(offset);
-            *this = address{result}.offset(sizeof(T));
+        template <traits::trivially_copyable Ty = address>
+        [[nodiscard]] constexpr Ty* self_inc_ptr(std::ptrdiff_t offset = 0) noexcept {
+            Ty* result = ptr<Ty>(offset);
+            *this = address{result}.offset(sizeof(Ty));
             return result;
         }
 
-        template <typename Ty>
-        std::expected<address, e_error_code> self_write_inc(const Ty data, const std::ptrdiff_t offset = 0) noexcept {
+        template <traits::trivially_copyable Ty>
+        std::expected<address, e_error_code> self_write_inc(const Ty& data, std::ptrdiff_t offset = 0) noexcept {
             auto result = this->offset(offset).write(data);
             *this = this->offset(offset + sizeof(Ty));
             return result;
         }
 
-        [[nodiscard]] constexpr address align_down(const std::size_t factor) const noexcept {
+        [[nodiscard]] constexpr address align_down(std::size_t factor) const noexcept {
             return {address_ & ~(factor - 1U)};
         }
 
-        [[nodiscard]] constexpr address align_up(const std::size_t factor) const noexcept {
+        [[nodiscard]] constexpr address align_up(std::size_t factor) const noexcept {
             return address{address_ + factor - 1U}.align_down(factor);
         }
 
-        template <typename DstTy>
-        [[nodiscard]] constexpr DstTy cast() const noexcept {
-            if constexpr (std::is_same_v<std::remove_cv_t<DstTy>, decltype(address_)>) {
+        template <typename DstT>
+        [[nodiscard]] constexpr DstT cast() const noexcept {
+            if constexpr (std::is_same_v<std::remove_cv_t<DstT>, decltype(address_)>) {
                 return address_;
-            } else if constexpr (sizeof(DstTy) < sizeof(address_)) {
-                return static_cast<DstTy>(address_);
+            } else if constexpr (std::is_integral_v<DstT>) {
+                return static_cast<DstT>(address_);
             } else {
-                return (DstTy)address_; // NOLINT
+                return reinterpret_cast<DstT>(address_);
             }
         }
 
-        template <typename T>
-        [[nodiscard]] constexpr T as() const noexcept {
-            return cast<T>();
+        template <traits::trivially_copyable Ty>
+        [[nodiscard]] constexpr Ty as() const noexcept {
+            return cast<Ty>();
         }
 
         constexpr explicit operator std::uintptr_t() const noexcept {
@@ -170,12 +136,22 @@ namespace memory {
         // \note: @annihilatorq: intentionally left with no return type, see #11
         constexpr auto operator<=>(const address&) const = default;
 
-        constexpr address operator+(const address& rhs) const {
-            return static_cast<address>(address_ + rhs.address_);
+        constexpr address& operator+=(const address& rhs) noexcept {
+            address_ += rhs.address_;
+            return *this;
         }
 
-        constexpr address operator-(const address& rhs) const {
-            return static_cast<address>(address_ - rhs.address_);
+        constexpr address& operator-=(const address& rhs) noexcept {
+            address_ -= rhs.address_;
+            return *this;
+        }
+
+        constexpr address operator+(const address& rhs) const noexcept {
+            return {address_ + rhs.address_};
+        }
+
+        constexpr address operator-(const address& rhs) const noexcept {
+            return {address_ - rhs.address_};
         }
 
     private:

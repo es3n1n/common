@@ -1,10 +1,10 @@
+#include <array>
 #include <es3n1n/common/memory/address.hpp>
 #include <gtest/gtest.h>
 
 TEST(address, basics) {
     /// We aren't modifying zeroes
     EXPECT_EQ(memory::address(nullptr).offset(1).inner(), 0);
-
     EXPECT_EQ(memory::address(1ULL).offset(1).inner(), 2);
 }
 
@@ -89,4 +89,67 @@ TEST(address, casting) {
 
     int* ptr = addr.as<int*>();
     EXPECT_EQ(reinterpret_cast<std::uintptr_t>(ptr), static_cast<std::uintptr_t>(0x12345678));
+}
+
+TEST(address, constructors) {
+    EXPECT_EQ(memory::address(nullptr).inner(), 0);
+    EXPECT_EQ(memory::address(0x1234ULL).inner(), 0x1234ULL);
+
+    int dummy = 0;
+    EXPECT_EQ(memory::address(&dummy).inner(), reinterpret_cast<std::uintptr_t>(&dummy));
+
+    std::array<uint8_t, 4> data = {1, 2, 3, 4};
+    EXPECT_EQ(memory::address(std::span(data)).inner(), reinterpret_cast<std::uintptr_t>(data.data()));
+}
+
+TEST(address, assignment_operators) {
+    memory::address addr1(0x1000);
+    memory::address addr2(0x2000);
+
+    addr1 += addr2;
+    EXPECT_EQ(addr1.inner(), 0x3000ULL);
+
+    addr1 -= addr2;
+    EXPECT_EQ(addr1.inner(), 0x1000ULL);
+}
+
+TEST(address, error_handling) {
+    memory::address addr(nullptr);
+
+    auto read_result = addr.read<int>();
+    EXPECT_FALSE(read_result.has_value());
+    EXPECT_EQ(read_result.error(), memory::e_error_code::INVALID_ADDRESS);
+
+    int value = 42;
+    auto write_result = addr.write(value);
+    EXPECT_FALSE(write_result.has_value());
+    EXPECT_EQ(write_result.error(), memory::e_error_code::INVALID_ADDRESS);
+
+    auto get_result = addr.get<int>(5);
+    EXPECT_FALSE(get_result.has_value());
+    EXPECT_EQ(get_result.error(), memory::e_error_code::INVALID_ADDRESS);
+}
+
+TEST(address, formatting) {
+    memory::address addr(0x1234ABCD);
+    std::string formatted = std::format("{:x}", addr);
+    EXPECT_EQ(formatted, "1234abcd");
+}
+
+TEST(address, hashing) {
+    memory::address addr1(0x1234);
+    memory::address addr2(0x1234);
+    memory::address addr3(0x5678);
+
+    std::hash<memory::address> hasher;
+    EXPECT_EQ(hasher(addr1), hasher(addr2));
+    EXPECT_NE(hasher(addr1), hasher(addr3));
+}
+
+TEST(address, edge_cases) {
+    memory::address max_addr(std::numeric_limits<std::uintptr_t>::max());
+    EXPECT_EQ(max_addr.inner(), std::numeric_limits<std::uintptr_t>::max());
+
+    EXPECT_EQ(max_addr.offset(1).inner(), 0);
+    EXPECT_EQ(max_addr.align_up(2).inner(), 0);
 }
