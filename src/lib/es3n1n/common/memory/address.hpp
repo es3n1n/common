@@ -172,12 +172,7 @@ namespace memory {
         return static_cast<type>(address_ operation rhs.address_);                                         \
     }
 
-        MATH_OPERATOR(bool, ==)
-        MATH_OPERATOR(bool, !=)
-        MATH_OPERATOR(bool, >)
-        MATH_OPERATOR(bool, <)
-        MATH_OPERATOR(bool, <=)
-        MATH_OPERATOR(bool, >=)
+        auto operator<=>(const address&) const = default;
         MATH_OPERATOR(address, +)
         MATH_OPERATOR(address, -)
 
