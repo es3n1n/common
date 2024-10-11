@@ -123,13 +123,6 @@ TEST(matrix, compound_assignment) {
 }
 
 TEST(matrix, invalid_construction) {
-    EXPECT_THROW(
-        (linalg::Matrix<int, 2, 2>{{1, 2, 3}, {4, 5, 6}}),
-        std::invalid_argument
-    );
-
-    EXPECT_THROW(
-        (linalg::Matrix<int, 2, 2>{{1, 2}, {3, 4}, {5, 6}}),
-        std::invalid_argument
-    );
+    EXPECT_THROW((linalg::Matrix<int, 2, 2>{{1, 2, 3}, {4, 5, 6}}), std::invalid_argument);
+    EXPECT_THROW((linalg::Matrix<int, 2, 2>{{1, 2}, {3, 4}, {5, 6}}), std::invalid_argument);
 }
