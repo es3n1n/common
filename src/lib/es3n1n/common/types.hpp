@@ -1,8 +1,10 @@
 #pragma once
+#include <array>
+
 #include "base.hpp"
 #include "memory/address.hpp"
+#include "strong_integral.hpp"
 #include "traits.hpp"
-#include <array>
 
 namespace types {
     template <class... Args>

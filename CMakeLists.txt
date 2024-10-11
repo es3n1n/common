@@ -108,6 +108,8 @@ if(COMMON_BUILD_TESTS) # common-build-tests
 		"src/tests/base.cpp"
 		"src/tests/defers.cpp"
 		"src/tests/files.cpp"
+		"src/tests/linalg/matrix.cpp"
+		"src/tests/linalg/vector.cpp"
 		"src/tests/logger.cpp"
 		"src/tests/memory/address.cpp"
 		"src/tests/memory/range.cpp"
@@ -117,6 +119,7 @@ if(COMMON_BUILD_TESTS) # common-build-tests
 		"src/tests/progress.cpp"
 		"src/tests/random.cpp"
 		"src/tests/string_parser.cpp"
+		"src/tests/strong_integral.cpp"
 		"src/tests/traits.cpp"
 		"src/tests/types.cpp"
 		cmake.toml
