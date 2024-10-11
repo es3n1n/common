@@ -1,10 +1,10 @@
+#include <array>
 #include <es3n1n/common/memory/address.hpp>
 #include <gtest/gtest.h>
 
 TEST(address, basics) {
     /// We aren't modifying zeroes
     EXPECT_EQ(memory::address(nullptr).offset(1).inner(), 0);
-
     EXPECT_EQ(memory::address(1ULL).offset(1).inner(), 2);
 }
 
@@ -89,4 +89,145 @@ TEST(address, casting) {
 
     int* ptr = addr.as<int*>();
     EXPECT_EQ(reinterpret_cast<std::uintptr_t>(ptr), static_cast<std::uintptr_t>(0x12345678));
+}
+
+TEST(address, constructors) {
+    EXPECT_EQ(memory::address(nullptr).inner(), 0);
+    EXPECT_EQ(memory::address(0x1234ULL).inner(), 0x1234ULL);
+
+    int dummy = 0;
+    EXPECT_EQ(memory::address(&dummy).inner(), reinterpret_cast<std::uintptr_t>(&dummy));
+
+    std::array<uint8_t, 4> data = {1, 2, 3, 4};
+    EXPECT_EQ(memory::address(std::span(data)).inner(), reinterpret_cast<std::uintptr_t>(data.data()));
+}
+
+TEST(address, assignment_operators) {
+    memory::address addr1(0x1000);
+    memory::address addr2(0x2000);
+
+    addr1 += addr2;
+    EXPECT_EQ(addr1.inner(), 0x3000ULL);
+
+    addr1 -= addr2;
+    EXPECT_EQ(addr1.inner(), 0x1000ULL);
+}
+
+TEST(address, error_handling) {
+    memory::address addr(nullptr);
+
+    auto read_result = addr.read<int>();
+    EXPECT_FALSE(read_result.has_value());
+    EXPECT_EQ(read_result.error(), memory::e_error_code::INVALID_ADDRESS);
+
+    int value = 42;
+    auto write_result = addr.write(value);
+    EXPECT_FALSE(write_result.has_value());
+    EXPECT_EQ(write_result.error(), memory::e_error_code::INVALID_ADDRESS);
+
+    auto get_result = addr.get<int>(5);
+    EXPECT_FALSE(get_result.has_value());
+    EXPECT_EQ(get_result.error(), memory::e_error_code::INVALID_ADDRESS);
+}
+
+TEST(address, formatting) {
+    memory::address addr(0x1234ABCD);
+    std::string formatted = std::format("{:x}", addr);
+    EXPECT_EQ(formatted, "1234abcd");
+}
+
+TEST(address, hashing) {
+    memory::address addr1(0x1234);
+    memory::address addr2(0x1234);
+    memory::address addr3(0x5678);
+
+    std::hash<memory::address> hasher;
+    EXPECT_EQ(hasher(addr1), hasher(addr2));
+    EXPECT_NE(hasher(addr1), hasher(addr3));
+}
+
+TEST(address, edge_cases) {
+    memory::address max_addr(std::numeric_limits<std::uintptr_t>::max());
+    EXPECT_EQ(max_addr.inner(), std::numeric_limits<std::uintptr_t>::max());
+
+    EXPECT_EQ(max_addr.offset(1).inner(), 0);
+    EXPECT_EQ(max_addr.align_up(2).inner(), 0);
+}
+
+TEST(address, bounds_checking) {
+    memory::address addr(0x1000);
+    EXPECT_TRUE(addr.is_in_range(memory::address(0x500), memory::address(0x1500)));
+    EXPECT_FALSE(addr.is_in_range(memory::address(0x1500), memory::address(0x2000)));
+}
+
+TEST(address, relative_addressing) {
+    memory::address addr1(0x1000);
+    memory::address addr2(0x1500);
+    EXPECT_EQ(addr1.distance_to(addr2), 0x500);
+    EXPECT_EQ(addr2.distance_to(addr1), -0x500);
+}
+
+TEST(address, endianness) {
+    uint32_t value = 0x12345678;
+    memory::address addr(&value);
+
+    EXPECT_EQ(addr.read_le<uint32_t>().value(), std::endian::native == std::endian::little ? 0x12345678 : 0x78563412);
+    EXPECT_EQ(addr.read_be<uint32_t>().value(), std::endian::native == std::endian::big ? 0x12345678 : 0x78563412);
+}
+
+TEST(address, bitwise_operations) {
+    memory::address addr1(0xFF00);
+    memory::address addr2(0x00FF);
+    EXPECT_EQ((addr1 & addr2).inner(), 0x0000);
+    EXPECT_EQ((addr1 | addr2).inner(), 0xFFFF);
+    EXPECT_EQ((addr1 ^ addr2).inner(), 0xFFFF);
+
+    memory::address addr(0x1234);
+    EXPECT_EQ(addr << 4, memory::address(0x12340));
+    EXPECT_EQ(addr >> 4, memory::address(0x123));
+    EXPECT_EQ(addr << 8, memory::address(0x123400));
+    EXPECT_EQ(addr >> 8, memory::address(0x12));
+    EXPECT_EQ(addr << 0, addr);
+    EXPECT_EQ(addr >> 0, addr);
+    EXPECT_EQ(addr >> 16, memory::address(nullptr));
+
+    memory::address max_addr(std::numeric_limits<std::uintptr_t>::max());
+    EXPECT_EQ(max_addr << 1, memory::address(std::numeric_limits<std::uintptr_t>::max() << 1));
+
+    memory::address large_addr(0x1234567890ABCDEF);
+    EXPECT_EQ(large_addr >> 32, memory::address(0x12345678));
+}
+
+TEST(address, string_conversion) {
+    memory::address addr(0x1234);
+    EXPECT_EQ(addr.to_string(), "0x1234");
+}
+
+TEST(address, alignment) {
+    EXPECT_TRUE(memory::address(0x1000).is_aligned(16));
+    EXPECT_FALSE(memory::address(0x1001).is_aligned(16));
+}
+
+TEST(address, relative_to) {
+    memory::address base(0x1000);
+    memory::address addr(0x1500);
+    memory::address lower(0x500);
+
+    EXPECT_EQ(addr.relative_to(base), memory::address(0x500));
+    EXPECT_EQ(lower.relative_to(base), memory::address(0x500 - 0x1000));
+    EXPECT_EQ(base.relative_to(base), memory::address(nullptr));
+}
+
+TEST(address, page_aligns) {
+    memory::address addr1(0x1234);
+    EXPECT_EQ(addr1.page_align_down(), memory::address(0x1000));
+    EXPECT_EQ(addr1.page_align_up(), memory::address(0x2000));
+
+    memory::address addr2(0x2000);
+    EXPECT_EQ(addr2.page_align_down(), memory::address(0x2000));
+    EXPECT_EQ(addr2.page_align_up(), memory::address(0x2000));
+
+    memory::address addr3(0x2001);
+    EXPECT_EQ(addr3.page_align_down(), memory::address(0x2000));
+    EXPECT_EQ(addr3.page_align_up(), memory::address(0x3000));
 }

@@ -53,9 +53,15 @@ TEST(logger, basics) {
         TODO(0, "todo with {}", "an argument");
     };
 
-    /// Disable wcout/cout
-    std::cout.setstate(std::ios::failbit);
-    std::wcout.setstate(std::ios::failbit);
+    /// Backup cout and wcout
+    auto* coutbuf = std::cout.rdbuf();
+    auto* wcoutbuf = std::wcout.rdbuf();
+
+    /// Disable cout and wcout
+    std::cout.setstate(std::ios::failbit | std::ios::badbit);
+    std::wcout.setstate(std::ios::failbit | std::ios::badbit);
+    std::cout.rdbuf(nullptr);
+    std::wcout.rdbuf(nullptr);
 
     /// Test our stuff in different configurations
     logger::enabled = true;
@@ -67,4 +73,6 @@ TEST(logger, basics) {
     /// Re-enable wcout/cout
     std::cout.clear();
     std::wcout.clear();
+    std::cout.rdbuf(coutbuf);
+    std::wcout.rdbuf(wcoutbuf);
 }
