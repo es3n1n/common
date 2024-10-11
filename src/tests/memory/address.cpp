@@ -181,6 +181,21 @@ TEST(address, bitwise_operations) {
     EXPECT_EQ((addr1 & addr2).inner(), 0x0000);
     EXPECT_EQ((addr1 | addr2).inner(), 0xFFFF);
     EXPECT_EQ((addr1 ^ addr2).inner(), 0xFFFF);
+
+    memory::address addr(0x1234);
+    EXPECT_EQ(addr << 4, memory::address(0x12340));
+    EXPECT_EQ(addr >> 4, memory::address(0x123));
+    EXPECT_EQ(addr << 8, memory::address(0x123400));
+    EXPECT_EQ(addr >> 8, memory::address(0x12));
+    EXPECT_EQ(addr << 0, addr);
+    EXPECT_EQ(addr >> 0, addr);
+    EXPECT_EQ(addr >> 16, memory::address(nullptr));
+
+    memory::address max_addr(std::numeric_limits<std::uintptr_t>::max());
+    EXPECT_EQ(max_addr << 1, memory::address(std::numeric_limits<std::uintptr_t>::max() << 1));
+
+    memory::address large_addr(0x1234567890ABCDEF);
+    EXPECT_EQ(large_addr >> 32, memory::address(0x12345678));
 }
 
 TEST(address, string_conversion) {
@@ -191,4 +206,28 @@ TEST(address, string_conversion) {
 TEST(address, alignment) {
     EXPECT_TRUE(memory::address(0x1000).is_aligned(16));
     EXPECT_FALSE(memory::address(0x1001).is_aligned(16));
+}
+
+TEST(address, relative_to) {
+    memory::address base(0x1000);
+    memory::address addr(0x1500);
+    memory::address lower(0x500);
+
+    EXPECT_EQ(addr.relative_to(base), memory::address(0x500));
+    EXPECT_EQ(lower.relative_to(base), memory::address(0x500 - 0x1000));
+    EXPECT_EQ(base.relative_to(base), memory::address(nullptr));
+}
+
+TEST(address, page_aligns) {
+    memory::address addr1(0x1234);
+    EXPECT_EQ(addr1.page_align_down(), memory::address(0x1000));
+    EXPECT_EQ(addr1.page_align_up(), memory::address(0x2000));
+
+    memory::address addr2(0x2000);
+    EXPECT_EQ(addr2.page_align_down(), memory::address(0x2000));
+    EXPECT_EQ(addr2.page_align_up(), memory::address(0x2000));
+
+    memory::address addr3(0x2001);
+    EXPECT_EQ(addr3.page_align_down(), memory::address(0x2000));
+    EXPECT_EQ(addr3.page_align_up(), memory::address(0x3000));
 }

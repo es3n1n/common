@@ -10,6 +10,10 @@
 #include "es3n1n/common/traits.hpp"
 #include "reader.hpp"
 
+#if !defined(COMMON_PAGE_SIZE)
+    #define COMMON_PAGE_SIZE 0x1000
+#endif
+
 namespace memory {
     /// \brief Represents a memory address with various operations and utilities
     class address {
@@ -166,6 +170,16 @@ namespace memory {
             return address{address_ + factor - 1U}.align_down(factor);
         }
 
+        /// \brief Align the address to a page boundary
+        [[nodiscard]] address page_align_up() const noexcept {
+            return align_up(COMMON_PAGE_SIZE);
+        }
+
+        /// \brief Align the address down to a page boundary
+        [[nodiscard]] address page_align_down() const noexcept {
+            return align_down(COMMON_PAGE_SIZE);
+        }
+
         /// \brief Cast the address to another type
         /// \tparam DstT The destination type
         /// \return The address cast to the specified type
@@ -186,21 +200,6 @@ namespace memory {
         template <traits::trivially_copyable Ty>
         [[nodiscard]] constexpr Ty as() const noexcept {
             return cast<Ty>();
-        }
-
-        /// \brief Check if the address is within a given range
-        /// \param start The start of the range
-        /// \param end The end of the range
-        /// \return True if the address is within the range, false otherwise
-        [[nodiscard]] bool is_in_range(const address& start, const address& end) const noexcept {
-            return *this >= start && *this < end;
-        }
-
-        /// \brief Calculate the distance to another address
-        /// \param other The other address
-        /// \return The distance between this address and the other address
-        [[nodiscard]] std::ptrdiff_t distance_to(const address& other) const noexcept {
-            return static_cast<std::ptrdiff_t>(other.address_ - address_);
         }
 
         /// \brief Read an integral value in little-endian format
@@ -284,6 +283,14 @@ namespace memory {
             return {address_ ^ other.address_};
         }
 
+        [[nodiscard]] constexpr address operator<<(std::size_t shift) const noexcept {
+            return {address_ << shift};
+        }
+
+        [[nodiscard]] constexpr address operator>>(std::size_t shift) const noexcept {
+            return {address_ >> shift};
+        }
+
         /// \brief Convert the address to a string representation
         /// \return A string representation of the address in hexadecimal format
         [[nodiscard]] std::string to_string() const {
@@ -295,6 +302,27 @@ namespace memory {
         /// \return True if the address is aligned, false otherwise
         [[nodiscard]] bool is_aligned(std::size_t alignment) const noexcept {
             return (address_ % alignment) == 0;
+        }
+
+        /// \brief Get the relative offset from a base address
+        /// \param base The base address
+        [[nodiscard]] address relative_to(const address& base) const noexcept {
+            return address{address_ - base.address_};
+        }
+
+        /// \brief Check if the address is within a given range
+        /// \param start The start of the range
+        /// \param end The end of the range
+        /// \return True if the address is within the range, false otherwise
+        [[nodiscard]] bool is_in_range(const address& start, const address& end) const noexcept {
+            return *this >= start && *this < end;
+        }
+
+        /// \brief Calculate the distance to another address
+        /// \param other The other address
+        /// \return The distance between this address and the other address
+        [[nodiscard]] std::ptrdiff_t distance_to(const address& other) const noexcept {
+            return static_cast<std::ptrdiff_t>(other.address_ - address_);
         }
 
     private:
