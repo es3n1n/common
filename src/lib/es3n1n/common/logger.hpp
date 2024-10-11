@@ -13,32 +13,29 @@
 #include "platform.hpp"
 
 namespace logger {
-    /// Switch this var to false if you want to ignore all output
+    /// \brief Flag to enable or disable all logging output
     inline bool enabled = true;
 
     namespace detail {
-        /// Config
-        ///
+        /// \brief Configuration options for the logger
         inline bool colors_enabled = true;
         inline bool show_timestamps = true;
 
-        /// Constants
-        ///
-        constexpr std::size_t kMaxLevelNameSize = 8;
+        /// \brief Constants for formatting
+        constexpr std::size_t kMaxLevelNameSize = 5;
         constexpr std::size_t kIndentationSize = kMaxLevelNameSize; // in spaces
 
-        /// A mutex that would be used to make sure that we are logging one line at the time
+        /// \brief Mutex to ensure thread-safe logging
         inline std::mutex _mtx = {};
 
-        /// Just a set of colors for the verbose prefix in console
-        ///
+        /// \brief Namespace containing color definitions for console output
         namespace colors {
-            // clang-format off
-            struct col_t { std::uint8_t fg, bg; };
-            // clang-format on
+            /// \brief Console color structure definition
+            struct col_t {
+                std::uint8_t fg, bg;
+            };
 
-            /// @credits: https://stackoverflow.com/a/54062826
-            ///
+            /// \credits https://stackoverflow.com/a/54062826
             [[maybe_unused]] inline constexpr col_t NO_COLOR = {0, 0}; // no color
 
             [[maybe_unused]] inline constexpr col_t BLACK = {30, 40};
@@ -60,9 +57,10 @@ namespace logger {
             [[maybe_unused]] inline constexpr col_t BRIGHT_WHITE = {97, 107};
         } // namespace colors
 
-        /// Util function to set console colors
-        /// \todo: @es3n1n: maybe add font_style too?
-        ///
+        /// \brief Apply color styling to console output
+        /// \param foreground Foreground color code
+        /// \param background Background color code
+        /// \param callback Function to execute with applied styling
         inline void apply_style(const std::uint8_t foreground, const std::uint8_t background, const std::function<void()>& callback) noexcept {
             static std::once_flag once_flag;
 
@@ -86,7 +84,7 @@ namespace logger {
                 ///
                 DWORD console_flags = 0;
                 if (GetConsoleMode(console_handle, &console_flags) == 0) [[unlikely]] {
-                    /// wtf? ok lets pray ansi codes would work lol.
+                    /// huh? ok lets pray ansi codes would work lol.
                     return;
                 }
 
@@ -129,8 +127,7 @@ namespace logger {
             apply(colors::NO_COLOR.fg, colors::NO_COLOR.bg);
         }
 
-        /// Util traits
-        ///
+        /// \brief Concept to check if a type is a string type
         template <typename Ty>
         concept str_t = requires {
             typename Ty::traits_type;
@@ -138,8 +135,14 @@ namespace logger {
             requires std::is_same_v<Ty, std::basic_string<typename Ty::value_type, typename Ty::traits_type, typename Ty::allocator_type>>;
         };
 
-        /// The main method that would be used to log lines
-        ///
+        /// \brief Main logging function to output formatted log messages
+        /// \tparam Ty String type (deduced)
+        /// \tparam IsWide Flag indicating if the string is wide (default: false)
+        /// \param indentation Number of indentation levels
+        /// \param level_name Name of the log level
+        /// \param color_fg Foreground color for the log level
+        /// \param color_bg Background color for the log level
+        /// \param msg The message to log
         template <str_t Ty, bool IsWide = std::is_same_v<Ty, std::wstring>>
         void log_line(const std::uint8_t indentation, const std::string_view level_name, //
                       const std::uint8_t color_fg, const std::uint8_t color_bg, //
@@ -230,7 +233,7 @@ namespace logger {
     MAKE_LOGGER_METHOD(info, "info", detail::colors::BRIGHT_GREEN, detail::colors::NO_COLOR)
     MAKE_LOGGER_METHOD(warn, "warn", detail::colors::BRIGHT_YELLOW, detail::colors::NO_COLOR)
     MAKE_LOGGER_METHOD(error, "error", detail::colors::BRIGHT_MAGENTA, detail::colors::NO_COLOR)
-    MAKE_LOGGER_METHOD(critical, "critical", detail::colors::BRIGHT_WHITE, detail::colors::MAGENTA)
+    MAKE_LOGGER_METHOD(critical, "crit", detail::colors::BRIGHT_WHITE, detail::colors::BRIGHT_RED)
 
     MAKE_LOGGER_METHOD(msg, "msg", detail::colors::BRIGHT_WHITE, detail::colors::NO_COLOR)
     MAKE_LOGGER_METHOD(todo, "todo", detail::colors::BRIGHT_YELLOW, detail::colors::NO_COLOR)
@@ -263,9 +266,24 @@ namespace logger {
 #undef MAKE_LOGGER_OR_METHOD
 } // namespace logger
 
-/// \note es3n1n: clang momento
+/// \brief Macro to log a FIXME message without arguments
+/// \param indentation Indentation level
+/// \param fmt Format string
 #define FIXME_NO_ARG(indentation, fmt) logger::fixme<indentation>(fmt)
+
+/// \brief Macro to log a TODO message without arguments
+/// \param indentation Indentation level
+/// \param fmt Format string
 #define TODO_NO_ARG(indentation, fmt) logger::todo<indentation>(fmt)
 
+/// \brief Macro to log a FIXME message with arguments
+/// \param indentation Indentation level
+/// \param fmt Format string
+/// \param ... Variable arguments for formatting
 #define FIXME(indentation, fmt, ...) logger::fixme<indentation>(fmt, __VA_ARGS__)
+
+/// \brief Macro to log a TODO message with arguments
+/// \param indentation Indentation level
+/// \param fmt Format string
+/// \param ... Variable arguments for formatting
 #define TODO(indentation, fmt, ...) logger::todo<indentation>(fmt, __VA_ARGS__)
