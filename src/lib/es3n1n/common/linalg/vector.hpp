@@ -236,7 +236,7 @@ namespace linalg {
 
     private:
         /// \brief Array storing the vector components
-        std::array<Ty, N> components_ = {};
+        std::array<Ty, N> components_ = {}; ///< The vector components
     };
 
     /// \brief Type alias for 2D vector
