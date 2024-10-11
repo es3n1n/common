@@ -210,6 +210,30 @@ namespace linalg {
         }
 #endif
 
+        /// \brief Begin iterator for the vector components
+        /// \return Iterator to the beginning of the vector components
+        auto begin() {
+            return components_.begin();
+        }
+
+        /// \brief End iterator for the vector components
+        /// \return Iterator to the end of the vector components
+        auto end() {
+            return components_.end();
+        }
+
+        /// \brief Begin const iterator for the vector components
+        /// \return Const iterator to the beginning of the vector components
+        auto begin() const {
+            return components_.begin();
+        }
+
+        /// \brief End iterator for the vector components
+        /// \return Const iterator to the end of the vector components
+        auto end() const {
+            return components_.end();
+        }
+
     private:
         /// \brief Array storing the vector components
         std::array<Ty, N> components_ = {};
