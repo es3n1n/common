@@ -107,6 +107,94 @@ namespace types {
         /// \return The result of the three-way comparison
         constexpr auto operator<=>(const StrongIntegral&) const = default;
 
+        /// \brief Unary plus operator
+        /// \return A copy of the object
+        constexpr StrongIntegral operator+() const {
+            return StrongIntegral{+value_};
+        }
+
+        /// \brief Unary minus operator
+        /// \return A negated copy of the object
+        constexpr StrongIntegral operator-() const {
+            return StrongIntegral{-value_};
+        }
+
+        /// \brief Bitwise NOT operator
+        /// \return A bitwise NOT copy of the object
+        constexpr StrongIntegral operator~() const {
+            return StrongIntegral{~value_};
+        }
+
+        /// \brief Addition operator
+        /// \param rhs The right-hand side operand
+        /// \return The result of the addition
+        constexpr StrongIntegral operator+(const StrongIntegral& rhs) const {
+            return StrongIntegral{value_ + rhs.value_};
+        }
+
+        /// \brief Subtraction operator
+        /// \param rhs The right-hand side operand
+        /// \return The result of the subtraction
+        constexpr StrongIntegral operator-(const StrongIntegral& rhs) const {
+            return StrongIntegral{value_ - rhs.value_};
+        }
+
+        /// \brief Multiplication operator
+        /// \param rhs The right-hand side operand
+        /// \return The result of the multiplication
+        constexpr StrongIntegral operator*(const StrongIntegral& rhs) const {
+            return StrongIntegral{value_ * rhs.value_};
+        }
+
+        /// \brief Division operator
+        /// \param rhs The right-hand side operand
+        /// \return The result of the division
+        constexpr StrongIntegral operator/(const StrongIntegral& rhs) const {
+            return StrongIntegral{value_ / rhs.value_};
+        }
+
+        /// \brief Modulo operator
+        /// \param rhs The right-hand side operand
+        /// \return The result of the modulo operation
+        constexpr StrongIntegral operator%(const StrongIntegral& rhs) const {
+            return StrongIntegral{value_ % rhs.value_};
+        }
+
+        /// \brief Bitwise AND operator
+        /// \param rhs The right-hand side operand
+        /// \return The result of the bitwise AND operation
+        constexpr StrongIntegral operator&(const StrongIntegral& rhs) const {
+            return StrongIntegral{value_ & rhs.value_};
+        }
+
+        /// \brief Bitwise OR operator
+        /// \param rhs The right-hand side operand
+        /// \return The result of the bitwise OR operation
+        constexpr StrongIntegral operator|(const StrongIntegral& rhs) const {
+            return StrongIntegral{value_ | rhs.value_};
+        }
+
+        /// \brief Bitwise XOR operator
+        /// \param rhs The right-hand side operand
+        /// \return The result of the bitwise XOR operation
+        constexpr StrongIntegral operator^(const StrongIntegral& rhs) const {
+            return StrongIntegral{value_ ^ rhs.value_};
+        }
+
+        /// \brief Left shift operator
+        /// \param shift The number of positions to shift
+        /// \return The result of the left shift operation
+        constexpr StrongIntegral operator<<(int shift) const {
+            return StrongIntegral{value_ << shift};
+        }
+
+        /// \brief Right shift operator
+        /// \param shift The number of positions to shift
+        /// \return The result of the right shift operation
+        constexpr StrongIntegral operator>>(int shift) const {
+            return StrongIntegral{value_ >> shift};
+        }
+
     private:
         Ty value_ = {}; ///< The underlying value
     };

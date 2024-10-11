@@ -87,7 +87,7 @@ TEST(strong_integral, modulo_assignment) {
     EXPECT_EQ(a.value(), 4);
 }
 
-TEST(strong_integral, comparasion) {
+TEST(strong_integral, comparison) {
     TestInt a(41);
     TestInt b(42);
     TestInt c(42);
@@ -98,4 +98,90 @@ TEST(strong_integral, comparasion) {
     EXPECT_TRUE(b <= c);
     EXPECT_TRUE(b == c);
     EXPECT_TRUE(a != b);
+}
+
+TEST(strong_integral, unary_plus) {
+    TestInt a(42);
+    TestInt b = +a;
+    EXPECT_EQ(b.value(), 42);
+}
+
+TEST(strong_integral, unary_minus) {
+    TestInt a(42);
+    TestInt b = -a;
+    EXPECT_EQ(b.value(), -42);
+}
+
+TEST(strong_integral, bitwise_not) {
+    TestInt a(42);
+    TestInt b = ~a;
+    EXPECT_EQ(b.value(), ~42);
+}
+
+TEST(strong_integral, addition) {
+    TestInt a(40);
+    TestInt b(2);
+    TestInt c = a + b;
+    EXPECT_EQ(c.value(), 42);
+}
+
+TEST(strong_integral, subtraction) {
+    TestInt a(44);
+    TestInt b(2);
+    TestInt c = a - b;
+    EXPECT_EQ(c.value(), 42);
+}
+
+TEST(strong_integral, multiplication) {
+    TestInt a(21);
+    TestInt b(2);
+    TestInt c = a * b;
+    EXPECT_EQ(c.value(), 42);
+}
+
+TEST(strong_integral, division) {
+    TestInt a(84);
+    TestInt b(2);
+    TestInt c = a / b;
+    EXPECT_EQ(c.value(), 42);
+}
+
+TEST(strong_integral, modulo) {
+    TestInt a(44);
+    TestInt b(5);
+    TestInt c = a % b;
+    EXPECT_EQ(c.value(), 4);
+}
+
+TEST(strong_integral, bitwise_and) {
+    TestInt a(0b1010);
+    TestInt b(0b1100);
+    TestInt c = a & b;
+    EXPECT_EQ(c.value(), 0b1000);
+}
+
+TEST(strong_integral, bitwise_or) {
+    TestInt a(0b1010);
+    TestInt b(0b1100);
+    TestInt c = a | b;
+    EXPECT_EQ(c.value(), 0b1110);
+}
+
+TEST(strong_integral, bitwise_xor) {
+    TestInt a(0b1010);
+    TestInt b(0b1100);
+    TestInt c = a ^ b;
+    EXPECT_EQ(c.value(), 0b0110);
+}
+
+TEST(strong_integral, left_shift) {
+    TestInt a(0b1010);
+    TestInt b = a << 2;
+    EXPECT_EQ(b.value(), 0b101000);
+}
+
+TEST(strong_integral, right_shift) {
+    TestInt a(0b1010);
+    TestInt b = a >> 2;
+    EXPECT_EQ(b.value(), 0b10);
 }
