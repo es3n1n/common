@@ -342,7 +342,7 @@ struct std::formatter<memory::Address> : std::formatter<std::uintptr_t> {
 /// Custom hash implementation for std::hash to use this type in containers
 template <>
 struct std::hash<memory::Address> {
-    size_t operator()(const memory::Address& instance) const noexcept {
+    std::size_t operator()(const memory::Address& instance) const noexcept {
         return std::hash<std::uintptr_t>()(instance.inner());
     }
 };

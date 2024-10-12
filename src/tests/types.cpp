@@ -43,9 +43,9 @@ constexpr bool check_impl(std::index_sequence<Is...>) {
     return (ensure<Is, Ty::data()[Is]>() && ...);
 }
 
-template <types::ct_string_t Str>
+template <types::CtString Str>
 consteval auto operator""_ct() {
-    using s = types::type_string_t<Str>;
+    using s = types::TypeString<Str>;
     static_assert(s::size() == 5);
     return check_impl<s>(std::make_index_sequence<s::size()>{});
 }
