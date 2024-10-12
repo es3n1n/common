@@ -1,7 +1,7 @@
 #pragma once
 #include "base.hpp"
 #include "macros.hpp"
-#include <type_traits>
+#include <utility>
 
 /// \brief A class that holds a callable object and executes it upon destruction.
 /// \tparam Callable The type of the callable object.

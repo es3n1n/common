@@ -3,11 +3,13 @@
 #include "types.hpp"
 
 #include <algorithm>
+#include <climits>
 #include <numeric>
 #include <optional>
 #include <random>
 
-namespace random {
+/// Intentionally named rnd and not random to avoid conflicts with the standard library (libc++, libstdc++)
+namespace rnd {
     namespace detail {
         /// We are going to use the Mersenne Twister PRNG because it's pretty convenient
         /// and it's already present in std
@@ -133,4 +135,4 @@ namespace random {
     [[nodiscard]] auto or_(TArgs... args) {
         return item(types::to_array(std::forward<TArgs>(args)...));
     }
-} // namespace random
+} // namespace rnd
