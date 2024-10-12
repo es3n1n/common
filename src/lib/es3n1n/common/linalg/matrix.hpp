@@ -181,16 +181,16 @@ namespace linalg {
     /// \brief Alias for 4x4 matrices.
     /// \tparam Ty The type of elements in the matrix (must be a number type).
     template <traits::number Ty>
-    using mat4x4_t = Matrix<Ty, 4, 4>;
+    using Matrix4x4 = Matrix<Ty, 4, 4>;
 
     /// \brief Alias for 3x4 matrices.
     /// \tparam Ty The type of elements in the matrix (must be a number type).
     template <traits::number Ty>
-    using mat3x4_t = Matrix<Ty, 3, 4>;
+    using Matrix3x4 = Matrix<Ty, 3, 4>;
 
     /// \brief Alias for 4x4 matrices of 32-bit floats.
-    using mat4x4f32_t = mat4x4_t<float>;
+    using Matrix4x4f32 = Matrix4x4<float>;
 
     /// \brief Alias for 3x4 matrices of 32-bit floats.
-    using mat3x4f32_t = mat3x4_t<float>;
+    using Matrix3x4f32 = Matrix3x4<float>;
 } // namespace linalg

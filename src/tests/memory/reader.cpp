@@ -3,11 +3,11 @@
 #include <gtest/gtest.h>
 #include <tuple>
 
-inline std::expected<std::size_t, memory::e_error_code> read_impl(void*, const std::uintptr_t, const std::size_t) {
+inline std::expected<std::size_t, memory::ErrorCode> read_impl(void*, const std::uintptr_t, const std::size_t) {
     throw std::runtime_error("");
 }
 
-inline std::expected<std::size_t, memory::e_error_code> write_impl(std::uintptr_t, const void*, const std::size_t) {
+inline std::expected<std::size_t, memory::ErrorCode> write_impl(std::uintptr_t, const void*, const std::size_t) {
     throw std::runtime_error("");
 }
 

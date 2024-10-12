@@ -53,7 +53,7 @@ namespace memory {
         /// \param buffer Pointer to the data to write
         /// \param size Size of the data to write
         /// \return Expected containing this address on success, or an error code on failure
-        std::expected<Address, e_error_code> write(const void* buffer, std::size_t size) {
+        std::expected<Address, ErrorCode> write(const void* buffer, std::size_t size) {
             return memory::reader.write(address_, buffer, size).transform([this](auto) { return *this; });
         }
 
@@ -62,7 +62,7 @@ namespace memory {
         /// \param value The value to write
         /// \return Expected containing this address on success, or an error code on failure
         template <traits::trivially_copyable Ty>
-        std::expected<Address, e_error_code> write(Ty value) {
+        std::expected<Address, ErrorCode> write(Ty value) {
             return memory::reader.write(&value, address_).transform([this](auto) { return *this; });
         }
 
@@ -70,7 +70,7 @@ namespace memory {
         /// \tparam Ty Type of the value to read (must be trivially copyable)
         /// \return Expected containing the read value on success, or an error code on failure
         template <traits::trivially_copyable Ty>
-        [[nodiscard]] std::expected<Ty, e_error_code> read() const {
+        [[nodiscard]] std::expected<Ty, ErrorCode> read() const {
             return memory::reader.read<Ty>(address_);
         }
 
@@ -79,14 +79,14 @@ namespace memory {
         /// \param dst Pointer to the destination where the read value will be stored
         /// \return Expected containing the destination pointer on success, or an error code on failure
         template <traits::trivially_copyable Ty>
-        std::expected<Ty*, e_error_code> read(Ty* dst) const {
+        std::expected<Ty*, ErrorCode> read(Ty* dst) const {
             return memory::reader.read(dst, address_).transform([dst](auto) { return dst; });
         }
 
         /// \brief Read a vector of bytes from the address
         /// \param size Number of bytes to read
         /// \return Expected containing the read vector on success, or an error code on failure
-        [[nodiscard]] std::expected<std::vector<std::uint8_t>, e_error_code> read_vector(std::size_t size) const {
+        [[nodiscard]] std::expected<std::vector<std::uint8_t>, ErrorCode> read_vector(std::size_t size) const {
             std::vector<std::uint8_t> result(size);
             return memory::reader.read(result.data(), address_, size).transform([&result](auto) { return result; });
         }
@@ -95,7 +95,7 @@ namespace memory {
         /// \tparam Ty Type of the value to read (default is address)
         /// \return Expected containing the dereferenced value on success, or an error code on failure
         template <traits::trivially_copyable Ty = Address>
-        [[nodiscard]] std::expected<Ty, e_error_code> deref() const {
+        [[nodiscard]] std::expected<Ty, ErrorCode> deref() const {
             return memory::reader.read<Ty>(inner());
         }
 
@@ -104,16 +104,16 @@ namespace memory {
         /// \param count Number of times to dereference (default is 1)
         /// \return Expected containing the final dereferenced value on success, or an error code on failure
         template <traits::trivially_copyable Ty = Address>
-        [[nodiscard]] std::expected<Ty, e_error_code> get(std::size_t count = 1) const noexcept {
+        [[nodiscard]] std::expected<Ty, ErrorCode> get(std::size_t count = 1) const noexcept {
             if (!address_ || count == 0) {
-                return std::unexpected(e_error_code::INVALID_ADDRESS);
+                return std::unexpected(ErrorCode::INVALID_ADDRESS);
             }
 
             auto tmp = *this;
             for (std::size_t i = 1; i < count; ++i) {
                 auto deref_value = tmp.deref();
                 if (!deref_value) {
-                    return std::unexpected(e_error_code::NOT_ENOUGH_BYTES);
+                    return std::unexpected(ErrorCode::NOT_ENOUGH_BYTES);
                 }
                 tmp = *deref_value;
             }
@@ -147,7 +147,7 @@ namespace memory {
         /// \param offset Offset to add to the address before writing (default is 0)
         /// \return Expected containing this address on success, or an error code on failure
         template <traits::trivially_copyable Ty>
-        std::expected<Address, e_error_code> self_write_inc(const Ty& data, std::ptrdiff_t offset = 0) noexcept {
+        std::expected<Address, ErrorCode> self_write_inc(const Ty& data, std::ptrdiff_t offset = 0) noexcept {
             auto result = this->offset(offset).write(data);
             *this = this->offset(offset + sizeof(Ty));
             return result;
@@ -203,7 +203,7 @@ namespace memory {
         /// \tparam Ty The integral type to read
         /// \return Expected containing the read value on success, or an error code on failure
         template <std::integral Ty>
-        [[nodiscard]] std::expected<Ty, e_error_code> read_le() const {
+        [[nodiscard]] std::expected<Ty, ErrorCode> read_le() const {
             auto result = read<Ty>();
             if (!result) {
                 return result;
@@ -218,7 +218,7 @@ namespace memory {
         /// \tparam Ty The integral type to read
         /// \return Expected containing the read value on success, or an error code on failure
         template <std::integral Ty>
-        [[nodiscard]] std::expected<Ty, e_error_code> read_be() const {
+        [[nodiscard]] std::expected<Ty, ErrorCode> read_be() const {
             auto result = read<Ty>();
             if (!result) {
                 return result;
