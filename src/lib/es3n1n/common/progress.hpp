@@ -32,13 +32,9 @@ namespace progress {
         }
 
     private:
-        /// \brief Stopwatch
-        stopwatch::Stopwatch stopwatch_ = {};
-        /// \brief Progress bar title
-        std::string title_ = {};
-        /// \brief Total number of steps
-        std::size_t steps_ = {};
-        /// \brief Current step
-        std::ptrdiff_t step_ = -1; // we start at -1, and it will automatically increment it to 0
+        stopwatch::Stopwatch stopwatch_ = {}; ///< Stopwatch for elapsed time
+        std::string title_ = {}; ///< Title of the progress
+        std::size_t steps_ = {}; ///< Total steps
+        std::ptrdiff_t step_ = -1; ///< Current step. We start at -1, and it will automatically increment it to 0
     };
 } // namespace progress
