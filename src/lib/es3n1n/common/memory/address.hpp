@@ -61,7 +61,7 @@ namespace memory {
         /// \tparam Ty Type of the value to write (must be trivially copyable)
         /// \param value The value to write
         /// \return Expected containing this address on success, or an error code on failure
-        template <traits::trivially_copyable Ty>
+        template <traits::TriviallyCopyable Ty>
         std::expected<Address, ErrorCode> write(Ty value) {
             return memory::reader.write(&value, address_).transform([this](auto) { return *this; });
         }
@@ -69,7 +69,7 @@ namespace memory {
         /// \brief Read a trivially copyable value from the address
         /// \tparam Ty Type of the value to read (must be trivially copyable)
         /// \return Expected containing the read value on success, or an error code on failure
-        template <traits::trivially_copyable Ty>
+        template <traits::TriviallyCopyable Ty>
         [[nodiscard]] std::expected<Ty, ErrorCode> read() const {
             return memory::reader.read<Ty>(address_);
         }
@@ -78,7 +78,7 @@ namespace memory {
         /// \tparam Ty Type of the value to read (must be trivially copyable)
         /// \param dst Pointer to the destination where the read value will be stored
         /// \return Expected containing the destination pointer on success, or an error code on failure
-        template <traits::trivially_copyable Ty>
+        template <traits::TriviallyCopyable Ty>
         std::expected<Ty*, ErrorCode> read(Ty* dst) const {
             return memory::reader.read(dst, address_).transform([dst](auto) { return dst; });
         }
@@ -94,7 +94,7 @@ namespace memory {
         /// \brief Dereference the address to read a value
         /// \tparam Ty Type of the value to read (default is address)
         /// \return Expected containing the dereferenced value on success, or an error code on failure
-        template <traits::trivially_copyable Ty = Address>
+        template <traits::TriviallyCopyable Ty = Address>
         [[nodiscard]] std::expected<Ty, ErrorCode> deref() const {
             return memory::reader.read<Ty>(inner());
         }
@@ -103,7 +103,7 @@ namespace memory {
         /// \tparam Ty Type of the value to read (default is address)
         /// \param count Number of times to dereference (default is 1)
         /// \return Expected containing the final dereferenced value on success, or an error code on failure
-        template <traits::trivially_copyable Ty = Address>
+        template <traits::TriviallyCopyable Ty = Address>
         [[nodiscard]] std::expected<Ty, ErrorCode> get(std::size_t count = 1) const noexcept {
             if (!address_ || count == 0) {
                 return std::unexpected(ErrorCode::INVALID_ADDRESS);
@@ -125,7 +125,7 @@ namespace memory {
         /// \tparam Ty Type of the pointer (default is address)
         /// \param offset Offset to add to the address (default is 0)
         /// \return Pointer of type Ty* to the address (plus offset)
-        template <traits::trivially_copyable Ty = Address>
+        template <traits::TriviallyCopyable Ty = Address>
         [[nodiscard]] constexpr Ty* ptr(std::ptrdiff_t offset = 0) const noexcept {
             return this->offset(offset).as<std::add_pointer_t<Ty>>();
         }
@@ -134,7 +134,7 @@ namespace memory {
         /// \tparam Ty Type of the pointer (default is address)
         /// \param offset Offset to add to the address before getting the pointer (default is 0)
         /// \return Pointer of type Ty* to the original address (plus offset)
-        template <traits::trivially_copyable Ty = Address>
+        template <traits::TriviallyCopyable Ty = Address>
         [[nodiscard]] constexpr Ty* self_inc_ptr(std::ptrdiff_t offset = 0) noexcept {
             Ty* result = ptr<Ty>(offset);
             *this = Address{result}.offset(sizeof(Ty));
@@ -146,7 +146,7 @@ namespace memory {
         /// \param data The data to write
         /// \param offset Offset to add to the address before writing (default is 0)
         /// \return Expected containing this address on success, or an error code on failure
-        template <traits::trivially_copyable Ty>
+        template <traits::TriviallyCopyable Ty>
         std::expected<Address, ErrorCode> self_write_inc(const Ty& data, std::ptrdiff_t offset = 0) noexcept {
             auto result = this->offset(offset).write(data);
             *this = this->offset(offset + sizeof(Ty));
@@ -194,7 +194,7 @@ namespace memory {
         /// \brief Cast the address to another type (alias for cast)
         /// \tparam Ty The destination type (must be trivially copyable)
         /// \return The address cast to the specified type
-        template <traits::trivially_copyable Ty>
+        template <traits::TriviallyCopyable Ty>
         [[nodiscard]] constexpr Ty as() const noexcept {
             return cast<Ty>();
         }

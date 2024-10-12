@@ -13,7 +13,7 @@ namespace linalg {
     /// \tparam Ty The type of elements in the matrix (must be a number type).
     /// \tparam Rows The number of rows in the matrix.
     /// \tparam Cols The number of columns in the matrix.
-    template <traits::number Ty, std::size_t Rows, std::size_t Cols>
+    template <traits::Number Ty, std::size_t Rows, std::size_t Cols>
     class Matrix {
     public:
         /// \brief Default constructor.
@@ -180,12 +180,12 @@ namespace linalg {
 
     /// \brief Alias for 4x4 matrices.
     /// \tparam Ty The type of elements in the matrix (must be a number type).
-    template <traits::number Ty>
+    template <traits::Number Ty>
     using Matrix4x4 = Matrix<Ty, 4, 4>;
 
     /// \brief Alias for 3x4 matrices.
     /// \tparam Ty The type of elements in the matrix (must be a number type).
-    template <traits::number Ty>
+    template <traits::Number Ty>
     using Matrix3x4 = Matrix<Ty, 3, 4>;
 
     /// \brief Alias for 4x4 matrices of 32-bit floats.

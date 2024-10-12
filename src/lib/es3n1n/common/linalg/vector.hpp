@@ -15,7 +15,7 @@ namespace linalg {
     /// \brief A templated vector class representing an N-dimensional vector of numeric type Ty
     /// \tparam Ty The numeric type of the vector components
     /// \tparam N The dimension of the vector
-    template <traits::number Ty, std::size_t N>
+    template <traits::Number Ty, std::size_t N>
     class Vector {
     public:
         /// \brief Default constructor
@@ -240,15 +240,15 @@ namespace linalg {
     };
 
     /// \brief Type alias for 2D vector
-    template <traits::number Ty>
+    template <traits::Number Ty>
     using Vector2 = Vector<Ty, 2>;
 
     /// \brief Type alias for 3D vector
-    template <traits::number Ty>
+    template <traits::Number Ty>
     using Vector3 = Vector<Ty, 3>;
 
     /// \brief Type alias for 4D vector
-    template <traits::number Ty>
+    template <traits::Number Ty>
     using Vector4 = Vector<Ty, 4>;
 
     /// \brief Type alias for 2D vector of unsigned 32-bit integers

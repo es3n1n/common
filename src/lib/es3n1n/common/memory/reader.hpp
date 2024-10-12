@@ -80,12 +80,12 @@ namespace memory {
             return read_primitive_(buffer, address, size);
         }
 
-        template <traits::trivially_copyable Ty>
+        template <traits::TriviallyCopyable Ty>
         std::expected<std::size_t, ErrorCode> read(Ty* dst, const std::uintptr_t src) const {
             return read(dst, src, sizeof(Ty));
         }
 
-        template <traits::trivially_copyable Ty>
+        template <traits::TriviallyCopyable Ty>
         std::expected<Ty, ErrorCode> read(const std::uintptr_t src) const {
             Ty _obj = {};
 
@@ -100,7 +100,7 @@ namespace memory {
             return write_primitive_(address, buffer, size);
         }
 
-        template <traits::trivially_copyable Ty>
+        template <traits::TriviallyCopyable Ty>
         std::expected<std::size_t, ErrorCode> write(const Ty* src, const std::uintptr_t dst) const {
             return write(dst, src, sizeof(Ty));
         }
