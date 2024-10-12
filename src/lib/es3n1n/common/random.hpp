@@ -7,10 +7,10 @@
 #include <optional>
 #include <random>
 
-namespace rnd {
+namespace random {
     namespace detail {
-        /// We are gonna use the mersenne twister prng because its pretty convenient
-        /// and its already present in std
+        /// We are going to use the Mersenne Twister PRNG because it's pretty convenient
+        /// and it's already present in std
         inline std::mt19937_64 prng;
 
         /// \brief Set the MT seed
@@ -41,7 +41,7 @@ namespace rnd {
             explicit UniformIntDistribution(ResultTy min, ResultTy max = (std::numeric_limits<ResultTy>::max)()): min_(min), max_(max) { }
 
             /// \brief Generates a random integer within the distribution range.
-            /// \engine The random engine instance to use.
+            /// \param engine The random engine instance to use.
             template <typename Engine>
             ResultTy operator()(Engine& engine) {
                 return eval(engine, min_, max_);
@@ -76,7 +76,7 @@ namespace rnd {
         };
     } // namespace detail
 
-    /// \brief Get random number in desired range
+    /// \brief Get a random number in the desired range
     /// \tparam Ty result type
     /// \param min minimal value, by default set to the min limit of the `Ty` type
     /// \param max maximal value, by default set to the max limit of the `Ty` type
@@ -89,14 +89,14 @@ namespace rnd {
     }
 
     /// \brief Generate a number of bytes
-    /// \param ptr pointer where it should write these bytes to
-    /// \param size size
+    /// \param ptr pointer where it should write these bytes
+    /// \param size number of bytes to generate
     inline void bytes(std::uint8_t* ptr, const std::size_t size) {
         std::generate_n(ptr, size, []() -> std::uint8_t { return number<std::uint8_t>(); });
     }
 
     /// \brief Generate a number of bytes and return them as a vector
-    /// \param size size
+    /// \param size number of bytes to generate
     /// \return vector filled with random bytes
     [[nodiscard]] inline std::vector<std::uint8_t> bytes(const std::size_t size) {
         std::vector<std::uint8_t> result = {};
@@ -106,17 +106,17 @@ namespace rnd {
         return result;
     }
 
-    /// \brief
-    /// \param chance (from 0 to 100)% chance
-    /// \return true/false
+    /// \brief Generate a random boolean based on a percentage chance
+    /// \param chance percentage chance (from 0 to 100)
+    /// \return true or false
     [[nodiscard]] inline bool chance(const std::uint8_t chance) {
         return number<std::uint8_t>(0, 100) <= chance;
     }
 
     /// \brief Get a random item from the container
-    /// \tparam Rng Range
+    /// \tparam Rng Range type
     /// \param range Range value (vector/array/anything)
-    /// \return random value reference
+    /// \return reference to a random value from the range
     template <std::ranges::range Rng>
     [[nodiscard]] const std::ranges::range_value_t<Rng>& item(Rng&& range) {
         auto it = std::ranges::begin(range);
@@ -126,11 +126,11 @@ namespace rnd {
     }
 
     /// \brief Select between values
-    /// \tparam TArgs typename of the operands
+    /// \tparam TArgs types of the operands
     /// \param args variadic options
-    /// \return random choosen result
+    /// \return randomly chosen result
     template <typename... TArgs>
     [[nodiscard]] auto or_(TArgs... args) {
         return item(types::to_array(std::forward<TArgs>(args)...));
     }
-} // namespace rnd
+} // namespace random
