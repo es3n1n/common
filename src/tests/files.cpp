@@ -13,6 +13,7 @@ TEST(files, basics) {
 
     auto test_out_data = files::read_file(path);
 
-    EXPECT_EQ(std::memcmp(test_data, test_out_data.data(), sizeof(test_data)), 0);
+    EXPECT_TRUE(test_out_data.has_value());
+    EXPECT_EQ(std::memcmp(test_data, test_out_data->data(), sizeof(test_data)), 0);
     remove(path);
 }
