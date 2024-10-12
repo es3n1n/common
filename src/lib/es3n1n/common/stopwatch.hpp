@@ -1,115 +1,113 @@
 #pragma once
 #include "base.hpp"
 #include <chrono>
+#include <format>
+#include <string>
 
 namespace stopwatch {
-    /// \brief Our custom elapsed time storage
+    /// \brief Custom elapsed time storage class
     class ElapsedTime {
     public:
-        /// \brief Explicit conversion from chrono duration to our own stuff
-        /// \tparam Rep Duration rep
-        /// \tparam Period Duration period
-        /// \param elapsed Duration value
+        /// \brief Construct ElapsedTime from a chrono duration
+        /// \tparam Rep The arithmetic type representing the number of ticks
+        /// \tparam Period A std::ratio representing the tick period
+        /// \param elapsed The duration to convert
         template <class Rep, class Period>
-        explicit ElapsedTime(const std::chrono::duration<Rep, Period> elapsed) {
-            microseconds_ = std::chrono::duration_cast<std::chrono::microseconds>(elapsed);
-            hours_ = remainder_microseconds_cast<decltype(hours_)>();
-            minutes_ = remainder_microseconds_cast<decltype(minutes_)>();
-            seconds_ = remainder_microseconds_cast<decltype(seconds_)>();
-            milliseconds_ = remainder_microseconds_cast<decltype(milliseconds_)>();
+        explicit ElapsedTime(const std::chrono::duration<Rep, Period>& elapsed) {
+            total_microseconds_ = std::chrono::duration_cast<std::chrono::microseconds>(elapsed);
+            hours_ = extract_component<std::chrono::hours>();
+            minutes_ = extract_component<std::chrono::minutes>();
+            seconds_ = extract_component<std::chrono::seconds>();
+            milliseconds_ = extract_component<std::chrono::milliseconds>();
         }
 
-        /// \brief Convert elapsed time to string in format "{} hr {} min {} sec {} ms"
-        /// \return String
+        /// \brief Convert elapsed time to a formatted string
+        /// \return A string representation in the format "X hr Y min Z sec W ms" or "V microseconds"
         [[nodiscard]] std::string str() const {
-            std::string result = {};
-            /// Convert hours
-            if (auto hr = hours_.count()) {
-                result += std::format(" {} hr", hr);
-            }
+            std::string result;
+            append_if_non_zero(result, hours_, "hr");
+            append_if_non_zero(result, minutes_, "min");
+            append_if_non_zero(result, seconds_, "sec");
+            append_if_non_zero(result, milliseconds_, "ms");
 
-            /// Convert minutes
-            if (auto min = minutes_.count()) {
-                result += std::format(" {} min", min);
-            }
-
-            /// Convert seconds
-            if (auto sec = seconds_.count()) {
-                result += std::format(" {} sec", sec);
-            }
-
-            /// Convert milliseconds
-            if (auto ms = milliseconds_.count()) {
-                result += std::format(" {} ms", ms);
-            }
-
-            /// Convert microseconds only if others are empty
             if (result.empty()) {
-                result += std::format(" {} microseconds", microseconds_.count());
+                return std::format("{} microseconds", total_microseconds_.count());
             }
 
-            /// Remove the leading space
-            result = result.substr(1);
-
+            result = result.substr(1); // Remove leading space
             return result;
         }
 
     private:
-        /// \brief Get remainder from total microseconds for a given duration
-        /// \tparam Dst Destination duration type
-        /// \return Converted amount
-        template <typename Dst>
-        [[nodiscard]] Dst remainder_microseconds_cast() noexcept {
-            const auto result = std::chrono::duration_cast<Dst>(microseconds_);
-            microseconds_ -= std::chrono::duration_cast<decltype(microseconds_)>(result);
-            return result;
+        /// \brief Extract a time component from the total microseconds
+        /// \tparam DurationType The type of duration to extract
+        /// \return The extracted duration component
+        template <typename DurationType>
+        [[nodiscard]] DurationType extract_component() noexcept {
+            const auto component = std::chrono::duration_cast<DurationType>(total_microseconds_);
+            total_microseconds_ -= std::chrono::duration_cast<decltype(total_microseconds_)>(component);
+            return component;
         }
 
-        /// \brief Elapsed hours
-        std::chrono::hours hours_ = {};
-        /// \brief Elapsed minutes
-        std::chrono::minutes minutes_ = {};
-        /// \brief Elapsed seconds
-        std::chrono::seconds seconds_ = {};
-        /// \brief Elapsed milliseconds
-        std::chrono::milliseconds milliseconds_ = {};
-        /// \brief Elapsed **total** microseconds
-        std::chrono::microseconds microseconds_ = {};
+        /// \brief Append a non-zero time component to the result string
+        /// \tparam Ty The arithmetic type representing the number of ticks
+        /// \tparam Period A std::ratio representing the tick period of the duration
+        /// \param result The string to append to
+        /// \param duration The std::chrono::duration to check and potentially append
+        /// \param unit The string representation of the time unit (e.g., "hr", "min", "sec")
+        template <typename Ty, typename Period>
+        static void append_if_non_zero(std::string& result, const std::chrono::duration<Ty, Period>& duration, const char* unit) {
+            if (const auto count = duration.count(); count > 0) {
+                result += std::format(" {} {}", count, unit);
+            }
+        }
+
+        std::chrono::hours hours_{}; ///< Elapsed hours
+        std::chrono::minutes minutes_{}; ///< Elapsed minutes
+        std::chrono::seconds seconds_{}; ///< Elapsed seconds
+        std::chrono::milliseconds milliseconds_{}; ///< Elapsed milliseconds
+        std::chrono::microseconds total_microseconds_{}; ///< Total elapsed microseconds
     };
 
-    /// \brief A stopwatch class that should be used for all the time elapsing stuff
+    /// \brief A high-resolution stopwatch class for time measurements
     class Stopwatch : public base::NonCopyable {
         using Clock = std::chrono::high_resolution_clock;
         using TimePoint = std::chrono::time_point<Clock>;
 
     public:
-        /// \brief General constructor
+        /// \brief Default constructor
+        /// \note Automatically calls reset() to set the start time
         Stopwatch() noexcept {
             reset();
         }
 
-        /// \brief Start time reset
+        /// \brief Reset the stopwatch to the current time
         void reset() {
             started_ = Clock::now();
         }
 
-        /// \brief Get the difference between current and start time
-        /// \return ElapsedTime struct
-        [[nodiscard]] auto elapsed() const noexcept {
+        /// \brief Get the elapsed time since the last reset
+        /// \return An ElapsedTime object representing the time difference
+        [[nodiscard]] ElapsedTime elapsed() const noexcept {
             return ElapsedTime(Clock::now() - started_);
         }
 
     private:
-        /// \brief Start time
-        TimePoint started_ = {};
+        TimePoint started_{}; ///< The start time point
     };
+
 } // namespace stopwatch
 
-/// \brief Elapsed time formatter
+/// \brief Custom formatter for ElapsedTime to allow use with std::format
 template <>
 struct std::formatter<stopwatch::ElapsedTime> : std::formatter<std::string> {
-    template <class FormatContextTy>
-    constexpr auto format(const stopwatch::ElapsedTime& instance, FormatContextTy& ctx) const {
+    /// \brief Format the ElapsedTime object
+    /// \tparam FormatContext The type of the format context
+    /// \param instance The ElapsedTime instance to format
+    /// \param ctx The format context
+    /// \return An iterator past the last character written
+    template <class FormatContext>
+    constexpr auto format(const stopwatch::ElapsedTime& instance, FormatContext& ctx) const {
         return std::formatter<std::string>::format(instance.str(), ctx);
     }
 };

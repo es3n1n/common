@@ -15,7 +15,7 @@ namespace linalg {
     /// \brief A templated vector class representing an N-dimensional vector of numeric type Ty
     /// \tparam Ty The numeric type of the vector components
     /// \tparam N The dimension of the vector
-    template <traits::number Ty, std::size_t N>
+    template <traits::Number Ty, std::size_t N>
     class Vector {
     public:
         /// \brief Default constructor
@@ -240,42 +240,35 @@ namespace linalg {
     };
 
     /// \brief Type alias for 2D vector
-    template <traits::number Ty>
-    using vec2_t = Vector<Ty, 2>;
+    template <traits::Number Ty>
+    using Vector2 = Vector<Ty, 2>;
 
     /// \brief Type alias for 3D vector
-    template <traits::number Ty>
-    using vec3_t = Vector<Ty, 3>;
+    template <traits::Number Ty>
+    using Vector3 = Vector<Ty, 3>;
 
     /// \brief Type alias for 4D vector
-    template <traits::number Ty>
-    using vec4_t = Vector<Ty, 4>;
+    template <traits::Number Ty>
+    using Vector4 = Vector<Ty, 4>;
 
     /// \brief Type alias for 2D vector of unsigned 32-bit integers
-    using vec2u32_t = vec2_t<std::uint32_t>;
+    using Vector2u32 = Vector2<std::uint32_t>;
     /// \brief Type alias for 3D vector of unsigned 32-bit integers
-    using vec3u32_t = vec3_t<std::uint32_t>;
+    using Vector3u32 = Vector3<std::uint32_t>;
     /// \brief Type alias for 4D vector of unsigned 32-bit integers
-    using vec4u32_t = vec4_t<std::uint32_t>;
+    using Vector4u32 = Vector4<std::uint32_t>;
 
     /// \brief Type alias for 2D vector of signed 32-bit integers
-    using vec2i32_t = vec2_t<std::int32_t>;
+    using Vector2i32 = Vector2<std::int32_t>;
     /// \brief Type alias for 3D vector of signed 32-bit integers
-    using vec3i32_t = vec3_t<std::int32_t>;
+    using Vector3i32 = Vector3<std::int32_t>;
     /// \brief Type alias for 4D vector of signed 32-bit integers
-    using vec4i32_t = vec4_t<std::int32_t>;
+    using Vector4i32 = Vector4<std::int32_t>;
 
     /// \brief Type alias for 2D vector of 32-bit floats
-    using vec2f32_t = vec2_t<float>;
+    using Vector2f32 = Vector2<float>;
     /// \brief Type alias for 3D vector of 32-bit floats
-    using vec3f32_t = vec3_t<float>;
+    using Vector3f32 = Vector3<float>;
     /// \brief Type alias for 4D vector of 32-bit floats
-    using vec4f32_t = vec4_t<float>;
-
-    /// \brief Type alias for 2D vector of 64-bit doubles
-    using vec2f64_t = vec2_t<double>;
-    /// \brief Type alias for 3D vector of 64-bit doubles
-    using vec3f64_t = vec3_t<double>;
-    /// \brief Type alias for 4D vector of 64-bit doubles
-    using vec4f64_t = vec4_t<double>;
+    using Vector4f32 = Vector4<float>;
 } // namespace linalg

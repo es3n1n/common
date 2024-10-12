@@ -2,8 +2,8 @@
 #include <cstddef>
 #include <limits>
 
-/// Systems
-///
+/// \name System Detection
+/// \{
 #if defined(_WIN64)
     #define PLATFORM_IS_WIN true
     #define PLATFORM_IS_WIN32 false
@@ -55,10 +55,10 @@
 #else
     #error UNKNOWN SYSTEM
 #endif
+/// \}
 
-///
-/// Compilers
-///
+/// \name Compiler Detection
+/// \{
 #if defined(__GNUC__)
     #define PLATFORM_IS_GCC true
     #define PLATFORM_IS_CLANG false
@@ -74,9 +74,9 @@
 #else
     #error UNKNOWN_COMPILER
 #endif
+/// \}
 
-/// cxx interface
-///
+/// \brief Namespace containing platform-specific information
 namespace platform {
     [[maybe_unused]] constexpr size_t bitness = std::numeric_limits<size_t>::digits;
     [[maybe_unused]] constexpr bool is_x64 = bitness == 64;
@@ -96,28 +96,14 @@ namespace platform {
     [[maybe_unused]] constexpr bool is_msvc = PLATFORM_IS_MSVC;
 } // namespace platform
 
-/// \note: @es3n1n: this is needed because on gcc we'll get some warnings
-/// since `[[maybe_unused]]` attribute is getting ignored on a member of
-/// a class or struct
-///
-#if PLATFORM_IS_GCC
-    #define MAYBE_UNUSED_FIELD
-#else
-    #define MAYBE_UNUSED_FIELD [[maybe_unused]]
-#endif
-
-/// Platform-specific includes
-///
+/// \brief Include platform-specific headers
 #ifndef COMMON_NO_COMMON_INCLUDES
     #if PLATFORM_IS_WIN
-        #ifndef NONOGDI
-            #define NOGDI
-        #endif
         #include <Windows.h>
     #endif
 #endif
 
-/// Compiler-specific definitions
+/// \brief Force inline macro
 #if PLATFORM_IS_MSVC
     #define COMMON_FORCE_INLINE __forceinline
 #else

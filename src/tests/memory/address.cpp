@@ -118,16 +118,16 @@ TEST(address, error_handling) {
 
     auto read_result = addr.read<int>();
     EXPECT_FALSE(read_result.has_value());
-    EXPECT_EQ(read_result.error(), memory::e_error_code::INVALID_ADDRESS);
+    EXPECT_EQ(read_result.error(), memory::ErrorCode::INVALID_ADDRESS);
 
     int value = 42;
     auto write_result = addr.write(value);
     EXPECT_FALSE(write_result.has_value());
-    EXPECT_EQ(write_result.error(), memory::e_error_code::INVALID_ADDRESS);
+    EXPECT_EQ(write_result.error(), memory::ErrorCode::INVALID_ADDRESS);
 
     auto get_result = addr.get<int>(5);
     EXPECT_FALSE(get_result.has_value());
-    EXPECT_EQ(get_result.error(), memory::e_error_code::INVALID_ADDRESS);
+    EXPECT_EQ(get_result.error(), memory::ErrorCode::INVALID_ADDRESS);
 }
 
 TEST(address, formatting) {

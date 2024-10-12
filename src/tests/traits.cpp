@@ -7,11 +7,11 @@ static_assert(!traits::always_false_v<int>);
 static_assert(traits::is_any_of_v<int, char, int16_t, int, bool>);
 static_assert(!traits::is_any_of_v<int, char, int16_t, bool>);
 
-static_assert(traits::trivially_copyable<int>);
-static_assert(!traits::trivially_copyable<std::string>);
+static_assert(traits::TriviallyCopyable<int>);
+static_assert(!traits::TriviallyCopyable<std::string>);
 
-static_assert(traits::number<int>);
-static_assert(!traits::number<void>);
+static_assert(traits::Number<int>);
+static_assert(!traits::Number<void>);
 
-static_assert(traits::float_number<float>);
-static_assert(!traits::float_number<int>);
+static_assert(traits::FloatNumber<float>);
+static_assert(!traits::FloatNumber<int>);
