@@ -32,6 +32,22 @@ namespace types {
             return value_;
         }
 
+        [[nodiscard]] constexpr Ty& operator*() & noexcept {
+            return this->value_;
+        }
+
+        [[nodiscard]] constexpr const Ty& operator*() const& noexcept {
+            return this->value_;
+        }
+
+        [[nodiscard]] constexpr Ty&& operator*() && noexcept {
+            return std::move(this->value_);
+        }
+
+        [[nodiscard]] constexpr const Ty&& operator*() const&& noexcept {
+            return std::move(this->value_);
+        }
+
         /// \brief Increment operator
         /// \return Reference to the incremented object
         constexpr StrongIntegral& operator++() {
