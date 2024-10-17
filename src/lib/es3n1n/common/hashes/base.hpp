@@ -27,6 +27,35 @@ namespace hashes {
     public:
         /// \todo @es3n1n: Add requires clause to check for Derived::hash_impl
 
+        class Value {
+        private:
+            Ty value_;
+
+        public:
+            /// \brief Construct from a pre-calculated hash value
+            /* implicit */ consteval Value(Ty hash) noexcept: value_(hash) { }
+
+            /// \brief Construct from a string (consteval)
+            template <detail::Hashable CharTy>
+            /* implicit */ consteval Value(const CharTy* str) noexcept: value_(Derived::hash(str)) { }
+
+            /// \brief Implicit conversion to the hash type
+            constexpr operator Ty() const noexcept {
+                return value_;
+            }
+
+            /// \brief Equality comparison
+            constexpr bool operator==(const Value& other) const noexcept = default;
+            constexpr bool operator==(const Ty other) const noexcept {
+                return value_ == other;
+            }
+
+            /// \brief Get the underlying value
+            constexpr Ty get() const noexcept {
+                return value_;
+            }
+        };
+
         /// \brief Compute the hash of a span of characters
         /// \tparam CharTy The character type
         /// \param value The span of characters to hash

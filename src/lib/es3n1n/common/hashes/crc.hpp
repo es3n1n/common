@@ -1,6 +1,7 @@
 #pragma once
 #include "es3n1n/common/hashes/base.hpp"
 #include <array>
+#include <climits>
 
 namespace hashes {
     /// \brief Fowler–Noll–Vo-1 hash function
