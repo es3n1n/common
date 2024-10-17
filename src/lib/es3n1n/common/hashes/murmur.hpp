@@ -59,7 +59,7 @@ namespace hashes {
             const std::size_t num_blocks = len / sizeof(Ty);
 
             for (std::size_t i = 0; i < num_blocks; ++i) {
-                auto k = read_le(value, i * sizeof(Ty));
+                auto k = read_le(value, i);
 
                 k *= Parameters::c1;
                 k = std::rotl(k, Parameters::r1);
@@ -73,24 +73,13 @@ namespace hashes {
             const auto tail = value.subspan(value.size() - value.size() % sizeof(Ty));
             Ty k = 0;
 
-            switch (value.size() & (sizeof(Ty) - 1)) {
-            case 4:
-                k ^= static_cast<Ty>(tail[3]) << 24;
-                [[fallthrough]];
-            case 3:
-                k ^= static_cast<Ty>(tail[2]) << 16;
-                [[fallthrough]];
-            case 2:
-                k ^= static_cast<Ty>(tail[1]) << 8;
-                [[fallthrough]];
-            case 1:
-                k ^= static_cast<Ty>(tail[0]);
-                k *= Parameters::c1;
-                k = std::rotl(k, Parameters::r1);
-                k *= Parameters::c2;
-                h ^= k;
-                break;
+            for (std::size_t i = 0; i < tail.size(); ++i) {
+                k ^= static_cast<Ty>(tail[i]) << (i * sizeof(CharTy) * 8);
             }
+            k *= Parameters::c1;
+            k = std::rotl(k, Parameters::r1);
+            k *= Parameters::c2;
+            h ^= k;
 
             h ^= static_cast<Ty>(value.size());
 
