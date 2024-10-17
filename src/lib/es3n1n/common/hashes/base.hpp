@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <optional>
 #include <span>
+#include <string>
 #include <string_view>
 
 #include "es3n1n/common/traits.hpp"
