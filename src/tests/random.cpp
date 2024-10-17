@@ -37,4 +37,11 @@ TEST(random, basics) {
     EXPECT_EQ(rnd::number<uint32_t>(50, 100), 96);
     EXPECT_EQ(rnd::number<uint32_t>(50, 100), 70);
     EXPECT_EQ(rnd::number<uint32_t>(50, 100), 93);
+
+    std::vector<int> vec = {10, 20, 30, 40, 50};
+    EXPECT_EQ(rnd::item(vec), 10);
+
+    std::array<int, 5> arr = {100, 200, 300, 400, 500};
+    EXPECT_EQ(rnd::item(arr), 400);
+    EXPECT_EQ(rnd::item(std::span<int>(arr)), 200);
 }
