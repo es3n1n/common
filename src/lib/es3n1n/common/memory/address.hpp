@@ -181,7 +181,7 @@ namespace memory {
         /// \tparam DstT The destination type
         /// \return The address cast to the specified type
         template <typename DstT>
-        [[nodiscard]] constexpr DstT cast() const noexcept {
+        [[nodiscard]] constexpr DstT cast() const noexcept(std::is_nothrow_constructible_v<DstT>) {
             if constexpr (std::is_same_v<std::remove_cv_t<DstT>, decltype(address_)>) {
                 return address_;
             } else if constexpr (std::is_integral_v<DstT>) {
