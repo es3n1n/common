@@ -94,7 +94,7 @@ namespace rnd {
     /// \param ptr pointer where it should write these bytes
     /// \param size number of bytes to generate
     inline void bytes(std::uint8_t* ptr, const std::size_t size) {
-        std::generate_n(ptr, size, []() -> std::uint8_t { return number<std::uint8_t>(); });
+        std::ranges::generate_n(ptr, size, []() -> std::uint8_t { return number<std::uint8_t>(); });
     }
 
     /// \brief Generate a number of bytes and return them as a vector
@@ -119,11 +119,11 @@ namespace rnd {
     /// \tparam Rng Range type
     /// \param range Range value (vector/array/anything)
     /// \return reference to a random value from the range
-    template <std::ranges::range Rng>
-    [[nodiscard]] const std::ranges::range_value_t<Rng>& item(Rng&& range) {
-        auto it = std::ranges::begin(range);
-        std::advance(it, number<std::size_t>(static_cast<std::size_t>(0), //
-                                             static_cast<std::size_t>(std::ranges::distance(range) - 1)));
+    template <std::ranges::range Rng, typename RngValueT = std::ranges::range_value_t<Rng>>
+    [[nodiscard]] const RngValueT& item(Rng&& range) {
+        auto distance = std::ranges::distance(range);
+        auto generated_number = rnd::number<>(std::size_t(0), static_cast<std::size_t>(distance - 1));
+        auto it = std::ranges::next(std::ranges::begin(range), generated_number);
         return *it;
     }
 
