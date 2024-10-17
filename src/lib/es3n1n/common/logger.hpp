@@ -183,7 +183,7 @@ namespace logger {
 
                     /// \note @es3n1n: There doesn't seem to be a way to set the number of digits for `%S%`
                     /// so a dirty workaround for this would be manually converting to seconds/milliseconds
-                    /// \ref https://eel.is/c++draft/time.format#6
+                    /// \see https://eel.is/c++draft/time.format#6
                     const auto now_sec = std::chrono::time_point_cast<std::chrono::seconds>(tm);
                     const auto now_msec = std::chrono::duration_cast<std::chrono::milliseconds>(tm - now_sec).count();
 
