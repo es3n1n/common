@@ -108,6 +108,7 @@ if(COMMON_BUILD_TESTS) # common-build-tests
 		"src/tests/base.cpp"
 		"src/tests/defers.cpp"
 		"src/tests/files.cpp"
+		"src/tests/hashes/crc.cpp"
 		"src/tests/hashes/fnv.cpp"
 		"src/tests/linalg/matrix.cpp"
 		"src/tests/linalg/vector.cpp"
