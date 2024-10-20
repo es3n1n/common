@@ -55,11 +55,11 @@ namespace hashes {
         [[nodiscard]] static constexpr Ty hash_impl(const std::span<CharTy> value) noexcept {
             Ty h = Seed;
 
-            const std::size_t len_bytes = value.size();
-            const std::size_t num_blocks = len_bytes / sizeof(Ty);
+            const std::size_t len = value.size();
+            const std::size_t num_blocks = len / sizeof(Ty);
 
             for (std::size_t i = 0; i < num_blocks; ++i) {
-                auto k = read_imm(value, i);
+                auto k = read_imm(value, i * sizeof(Ty));
 
                 k *= Parameters::c1;
                 k = std::rotl(k, Parameters::r1);
