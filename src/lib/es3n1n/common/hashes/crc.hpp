@@ -19,7 +19,9 @@ namespace hashes {
                 for (std::size_t bit = 0; bit < CHAR_BIT; bit++) {
                     crc = (crc >> 1) ^ ((crc & 1) * kCrc32Polynomial);
                 }
-                result[i] = crc;
+                // \note: @annihilatorq: .at() is used to avoid weird warning C28020, when static
+                // analyzer thinks the index may go out of bounds when using [], despite clear limits
+                result.at( i ) = crc;
             }
             return result;
         }();
