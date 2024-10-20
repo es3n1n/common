@@ -26,7 +26,6 @@ namespace hashes {
     class HashFunction {
     public:
         /// \todo @es3n1n: Add requires clause to check for Derived::hash_impl
-
         class Value {
         private:
             Ty value_;
@@ -40,7 +39,7 @@ namespace hashes {
             /* implicit */ consteval Value(const CharTy* str) noexcept: value_(Derived::hash(str)) { }
 
             /// \brief Implicit conversion to the hash type
-            constexpr operator Ty() const noexcept {
+            /* implicit */ constexpr operator Ty() const noexcept {
                 return value_;
             }
 
@@ -65,6 +64,15 @@ namespace hashes {
             return Derived::hash_impl(value);
         }
 
+        /// \brief Function call operator for a span of characters
+        /// \tparam CharTy The character type
+        /// \param value The span of characters to hash
+        /// \return The computed hash
+        template <detail::Hashable CharTy>
+        [[nodiscard]] constexpr Ty operator()(const std::span<CharTy> value) const noexcept {
+            return hash(value);
+        }
+
         /// \brief Compute the hash of a null-terminated string
         /// \tparam CharTy The character type
         /// \param value The string to hash
@@ -78,12 +86,40 @@ namespace hashes {
             return hash(std::span(value, *size));
         }
 
-        /// \brief Function call operator
+        /// \brief Function call operator for a null-terminated string
+        /// \tparam CharTy The character type
+        /// \param value The string to hash
+        /// \param size Optional size of the string
+        /// \return The computed hash
+        template <detail::Hashable CharTy>
+        [[nodiscard]] constexpr Ty operator()(const CharTy* value, std::optional<std::size_t> size = std::nullopt) const noexcept {
+            return hash(value, size);
+        }
+
+        /// \brief Compute the hash of a string
+        /// \tparam CharTy The character type
+        /// \param value The string to hash
+        /// \return The computed hash
+        template <detail::Hashable CharTy>
+        [[nodiscard]] static constexpr Ty hash(const std::basic_string<CharTy>& value) noexcept {
+            return hash(std::span(value.data(), value.size()));
+        }
+
+        /// \brief Function call operator for string
         /// \tparam CharTy The character type
         /// \param value The string to hash
         /// \return The computed hash
         template <detail::Hashable CharTy>
         [[nodiscard]] constexpr Ty operator()(const std::basic_string<CharTy>& value) const noexcept {
+            return hash(value);
+        }
+
+        /// \brief Compute the hash of a string
+        /// \tparam CharTy The character type
+        /// \param value The string to hash
+        /// \return The computed hash
+        template <detail::Hashable CharTy>
+        [[nodiscard]] static constexpr Ty hash(const std::basic_string_view<CharTy>& value) noexcept {
             return hash(std::span(value.data(), value.size()));
         }
 
@@ -93,7 +129,7 @@ namespace hashes {
         /// \return The computed hash
         template <detail::Hashable CharTy>
         [[nodiscard]] constexpr Ty operator()(const std::basic_string_view<CharTy>& value) const noexcept {
-            return hash(std::span(value.data(), value.size()));
+            return hash(value);
         }
     };
 } // namespace hashes

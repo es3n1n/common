@@ -73,13 +73,15 @@ namespace hashes {
             const auto tail = value.subspan(value.size() - (value.size() % sizeof(Ty)));
             Ty k = 0;
 
-            for (std::size_t i = 0; i < tail.size(); ++i) {
-                k ^= static_cast<Ty>(tail[i]) << (i * sizeof(CharTy) * CHAR_BIT);
+            if (!tail.empty()) {
+                for (std::size_t i = 0; i < tail.size(); ++i) {
+                    k ^= static_cast<Ty>(tail[i]) << (i * sizeof(CharTy) * CHAR_BIT);
+                }
+                k *= Parameters::c1;
+                k = std::rotl(k, Parameters::r1);
+                k *= Parameters::c2;
+                h ^= k;
             }
-            k *= Parameters::c1;
-            k = std::rotl(k, Parameters::r1);
-            k *= Parameters::c2;
-            h ^= k;
 
             h ^= static_cast<Ty>(value.size());
 
