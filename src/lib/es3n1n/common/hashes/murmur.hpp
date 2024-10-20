@@ -48,7 +48,9 @@ namespace hashes {
                 const std::size_t char_index = offset + (i / sizeof(CharTy));
                 const std::size_t byte_index = i % sizeof(CharTy);
 
-                const unsigned char byte = (value[char_index] >> (byte_index * CHAR_BIT)) & 0xFF;
+                const auto char_val = std::bit_cast<std::make_unsigned_t<CharTy>>(value[char_index]);
+                const auto shift_count = byte_index * CHAR_BIT;
+                const auto byte = static_cast<std::uint8_t>((char_val >> shift_count) & 0xFFU);
                 result |= static_cast<Ty>(byte) << (i * CHAR_BIT);
             }
 
