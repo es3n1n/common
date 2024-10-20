@@ -1,7 +1,9 @@
 #pragma once
+#include <bit>
 #include <concepts>
 #include <cstdint>
 #include <limits>
+#include <utility>
 
 namespace numeric {
     /// \brief A floating point range representation (from 0.F to 1.F)
@@ -21,6 +23,48 @@ namespace numeric {
 
         float value = 0.F;
     };
+
+    /// \brief Convert a value to little-endian
+    /// \tparam Ty The integral type
+    /// \param value The value to convert
+    /// \return The value in little-endian
+    template <std::integral Ty>
+    [[nodiscard]] constexpr Ty to_le(const Ty value) noexcept {
+        if constexpr (std::endian::native == std::endian::big) {
+            return std::byteswap(value);
+        } else {
+            return value;
+        }
+    }
+
+    /// \brief Convert a value to big-endian
+    /// \tparam Ty The integral type
+    /// \param value The value to convert
+    /// \return The value in big-endian
+    template <std::integral Ty>
+    [[nodiscard]] constexpr Ty to_be(const Ty value) noexcept {
+        if constexpr (std::endian::native == std::endian::little) {
+            return std::byteswap(value);
+        } else {
+            return value;
+        }
+    }
+
+    /// \brief Convert a value to the desired endianness
+    /// \tparam Ty The integral type
+    /// \param value The value to convert
+    /// \param endian The desired endianness
+    /// \return The value in the desired endianness
+    template <std::integral Ty>
+    [[nodiscard]] constexpr Ty to_endian(const Ty value, const std::endian endian) noexcept {
+        switch (endian) {
+        case std::endian::big:
+            return to_be(value);
+        case std::endian::little:
+            return to_le(value);
+        }
+        std::unreachable();
+    }
 } // namespace numeric
 
 template <>
