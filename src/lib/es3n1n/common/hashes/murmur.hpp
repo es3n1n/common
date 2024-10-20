@@ -33,6 +33,7 @@ namespace hashes {
 
     /// \brief Murmur3 hash function
     /// \tparam Ty The size type for the hash
+    /// \note This implementation hashes the sequence of bytes, so hash(L"hello") and hash("hello") will produce different results
     /// \see https://en.wikipedia.org/wiki/MurmurHash
     template <detail::HashSize Ty, Ty Seed = 0, typename Parameters = detail::MurmurParameters<Ty>>
         requires(std::is_same_v<Ty, std::uint32_t>) /// \todo @es3n1n: Add support for 128-bit hashes once we have a 128-bit integer type
@@ -40,9 +41,17 @@ namespace hashes {
         template <detail::Hashable CharTy>
         [[nodiscard]] static constexpr Ty read_imm(const std::span<CharTy>& value, const std::size_t offset) noexcept {
             Ty result = 0;
-            for (std::size_t i = 0; i < sizeof(Ty); ++i) {
-                result |= static_cast<Ty>(static_cast<unsigned char>(value[offset + i])) << (i * CHAR_BIT);
+            const std::size_t remaining = value.size() - offset;
+            const std::size_t bytes_to_read = std::min(sizeof(Ty), remaining * sizeof(CharTy));
+
+            for (std::size_t i = 0; i < bytes_to_read; ++i) {
+                const std::size_t char_index = offset + (i / sizeof(CharTy));
+                const std::size_t byte_index = i % sizeof(CharTy);
+
+                const unsigned char byte = (value[char_index] >> (byte_index * CHAR_BIT)) & 0xFF;
+                result |= static_cast<Ty>(byte) << (i * CHAR_BIT);
             }
+
             return numeric::to_endian(result, Parameters::endian);
         }
 
@@ -55,11 +64,11 @@ namespace hashes {
         [[nodiscard]] static constexpr Ty hash_impl(const std::span<CharTy> value) noexcept {
             Ty h = Seed;
 
-            const std::size_t len = value.size();
+            const std::size_t len = value.size() * sizeof(CharTy);
             const std::size_t num_blocks = len / sizeof(Ty);
 
             for (std::size_t i = 0; i < num_blocks; ++i) {
-                auto k = read_imm(value, i * sizeof(Ty));
+                auto k = read_imm(value, i * sizeof(Ty) / sizeof(CharTy));
 
                 k *= Parameters::c1;
                 k = std::rotl(k, Parameters::r1);
@@ -70,7 +79,7 @@ namespace hashes {
                 h = h * Parameters::m + Parameters::n;
             }
 
-            const auto tail = value.subspan(value.size() - (value.size() % sizeof(Ty)));
+            const auto tail = value.subspan(num_blocks * sizeof(Ty) / sizeof(CharTy));
             Ty k = 0;
 
             if (!tail.empty()) {
@@ -83,7 +92,7 @@ namespace hashes {
                 h ^= k;
             }
 
-            h ^= static_cast<Ty>(value.size());
+            h ^= static_cast<Ty>(len);
 
             h ^= h >> Parameters::fmix_shift_1;
             h *= Parameters::fmix_c1;
