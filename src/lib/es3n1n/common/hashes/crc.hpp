@@ -21,7 +21,7 @@ namespace hashes {
                 }
                 // \note: @annihilatorq: .at() is used to avoid weird warning C28020, when static
                 // analyzer thinks the index may go out of bounds when using [], despite clear limits
-                result.at( i ) = crc;
+                result.at(i) = crc;
             }
             return result;
         }();
