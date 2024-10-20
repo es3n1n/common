@@ -2,6 +2,7 @@
 #include "es3n1n/common/hashes/base.hpp"
 #include "es3n1n/common/numeric.hpp"
 #include <array>
+#include <climits>
 
 namespace hashes {
     namespace detail {
@@ -36,12 +37,11 @@ namespace hashes {
     template <detail::HashSize Ty, Ty Seed = 0, typename Parameters = detail::MurmurParameters<Ty>>
         requires(std::is_same_v<Ty, std::uint32_t>) /// \todo @es3n1n: Add support for 128-bit hashes once we have a 128-bit integer type
     class Murmur3 : public HashFunction<Murmur3<Ty>, Ty> {
-    private:
         template <detail::Hashable CharTy>
-        [[nodiscard]] static constexpr Ty read_le(const std::span<CharTy>& value, const std::size_t offset) noexcept {
+        [[nodiscard]] static constexpr Ty read_imm(const std::span<CharTy>& value, const std::size_t offset) noexcept {
             Ty result = 0;
             for (std::size_t i = 0; i < sizeof(Ty); ++i) {
-                result |= static_cast<Ty>(static_cast<unsigned char>(value[offset + i])) << (i * 8);
+                result |= static_cast<Ty>(static_cast<unsigned char>(value[offset + i])) << (i * CHAR_BIT);
             }
             return numeric::to_endian(result, Parameters::endian);
         }
@@ -55,11 +55,11 @@ namespace hashes {
         [[nodiscard]] static constexpr Ty hash_impl(const std::span<CharTy> value) noexcept {
             Ty h = Seed;
 
-            const std::size_t len = value.size() * sizeof(CharTy);
-            const std::size_t num_blocks = len / sizeof(Ty);
+            const std::size_t len_bytes = value.size();
+            const std::size_t num_blocks = len_bytes / sizeof(Ty);
 
             for (std::size_t i = 0; i < num_blocks; ++i) {
-                auto k = read_le(value, i);
+                auto k = read_imm(value, i);
 
                 k *= Parameters::c1;
                 k = std::rotl(k, Parameters::r1);
@@ -70,11 +70,11 @@ namespace hashes {
                 h = h * Parameters::m + Parameters::n;
             }
 
-            const auto tail = value.subspan(value.size() - value.size() % sizeof(Ty));
+            const auto tail = value.subspan(value.size() - (value.size() % sizeof(Ty)));
             Ty k = 0;
 
             for (std::size_t i = 0; i < tail.size(); ++i) {
-                k ^= static_cast<Ty>(tail[i]) << (i * sizeof(CharTy) * 8);
+                k ^= static_cast<Ty>(tail[i]) << (i * sizeof(CharTy) * CHAR_BIT);
             }
             k *= Parameters::c1;
             k = std::rotl(k, Parameters::r1);
@@ -83,13 +83,11 @@ namespace hashes {
 
             h ^= static_cast<Ty>(value.size());
 
-            /// Fmix
             h ^= h >> Parameters::fmix_shift_1;
             h *= Parameters::fmix_c1;
             h ^= h >> Parameters::fmix_shift_2;
             h *= Parameters::fmix_c2;
             h ^= h >> Parameters::fmix_shift_3;
-
             return h;
         }
     };
@@ -98,6 +96,6 @@ namespace hashes {
     using Murmur3_32 = Murmur3<std::uint32_t>;
 } // namespace hashes
 
-[[nodiscard]] inline consteval std::uint32_t operator""_murmur3_32(const char* value, std::size_t size) noexcept {
+[[nodiscard]] consteval std::uint32_t operator""_murmur3_32(const char* value, std::size_t size) noexcept {
     return hashes::Murmur3_32::hash(std::span(value, size));
 }
