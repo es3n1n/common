@@ -7,27 +7,20 @@
 
 namespace numeric {
     /// \brief A floating point range representation (from 0.F to 1.F)
-    struct flt_range_t {
-        /// \brief Init a range with desired value
-        /// \param value a value in ranges (0.F to 1.F)
-        /* implicit */ constexpr flt_range_t(const float value): value(value) { } // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
+    struct FloatRange {
+        /* implicit */ constexpr FloatRange(const float value): value(value) { } // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
+        explicit constexpr FloatRange(uint8_t) = delete;
 
-        /// \brief Prevent implicit conversion from uint8_t
-        explicit constexpr flt_range_t(uint8_t value) = delete;
-
-        /// \brief Implicitly convert range to the float
-        /// \return floating point value from 0.F to 1.F
-        /* implicit */ constexpr operator float() const { // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
+        /* implicit */ constexpr operator float() const { // NOLINT(hicpp-explicit-conversions)
             return value;
         }
 
         float value = 0.F;
     };
 
-    /// \brief Convert a value to little-endian
-    /// \tparam Ty The integral type
-    /// \param value The value to convert
-    /// \return The value in little-endian
+    /// Backporting for older version of common lib
+    using flt_range_t = FloatRange;
+
     template <std::integral Ty>
     [[nodiscard]] constexpr Ty to_le(const Ty value) noexcept {
         if constexpr (std::endian::native == std::endian::big) {
@@ -37,10 +30,6 @@ namespace numeric {
         }
     }
 
-    /// \brief Convert a value to big-endian
-    /// \tparam Ty The integral type
-    /// \param value The value to convert
-    /// \return The value in big-endian
     template <std::integral Ty>
     [[nodiscard]] constexpr Ty to_be(const Ty value) noexcept {
         if constexpr (std::endian::native == std::endian::little) {
@@ -50,11 +39,6 @@ namespace numeric {
         }
     }
 
-    /// \brief Convert a value to the desired endianness
-    /// \tparam Ty The integral type
-    /// \param value The value to convert
-    /// \param endian The desired endianness
-    /// \return The value in the desired endianness
     template <std::integral Ty>
     [[nodiscard]] constexpr Ty to_endian(const Ty value, const std::endian endian) noexcept {
         switch (endian) {
@@ -70,14 +54,10 @@ namespace numeric {
 template <>
 class std::numeric_limits<numeric::flt_range_t> : public std::numeric_limits<float> {
 public:
-    /// \brief Get a minimal range value
-    /// \return 0.F
     [[nodiscard]] static constexpr numeric::flt_range_t(min)() noexcept {
         return 0.F;
     }
 
-    /// \brief Get a maximal range value
-    /// \return 1.F
     [[nodiscard]] static constexpr numeric::flt_range_t(max)() noexcept {
         return 1.F;
     }

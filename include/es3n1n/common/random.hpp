@@ -11,20 +11,14 @@
 /// Intentionally named rnd and not random to avoid conflicts with the standard library (libc++, libstdc++)
 namespace rnd {
     namespace detail {
-        /// We are going to use the Mersenne Twister PRNG because it's pretty convenient
-        /// and it's already present in std
         inline std::mt19937_64 prng;
 
-        /// \brief Set the MT seed
-        /// \param seed seed to set
         inline void seed(std::optional<std::uint64_t> seed = std::nullopt) {
-            /// Generate the random seed, if needed
             if (!seed.has_value()) {
                 std::random_device device;
                 seed = (static_cast<uint64_t>(device()) << (sizeof(uint32_t) * CHAR_BIT)) | device();
             }
 
-            /// Set the seed
             logger::info("random: seed is {:#x}", *seed);
             prng.seed(*seed);
         }
@@ -39,24 +33,16 @@ namespace rnd {
         class UniformIntDistribution {
         public:
             using ResultTy = IntType;
+            using UResultTy = std::make_unsigned_t<ResultTy>;
 
             explicit UniformIntDistribution(ResultTy min, ResultTy max = (std::numeric_limits<ResultTy>::max)()): min_(min), max_(max) { }
 
-            /// \brief Generates a random integer within the distribution range.
-            /// \param engine The random engine instance to use.
             template <typename Engine>
             ResultTy operator()(Engine& engine) {
                 return eval(engine, min_, max_);
             }
 
         private:
-            using UResultTy = std::make_unsigned_t<ResultTy>;
-
-            /// \brief Evaluates the distribution and generates a random integer.
-            /// \param engine The random engine instance to use.
-            /// \param min The minimum value of the distribution (inclusive).
-            /// \param max The maximum value of the distribution (inclusive).
-            /// \return A random integer within the specified range.
             template <typename Engine>
             ResultTy eval(Engine& engine, ResultTy min, ResultTy max) const {
                 const auto u_min = static_cast<UResultTy>(min);
@@ -78,11 +64,6 @@ namespace rnd {
         };
     } // namespace detail
 
-    /// \brief Get a random number in the desired range
-    /// \tparam Ty result type
-    /// \param min minimal value, by default set to the min limit of the `Ty` type
-    /// \param max maximal value, by default set to the max limit of the `Ty` type
-    /// \return random number
     template <typename Ty = std::uint32_t, typename TyVal = std::remove_reference_t<Ty>, typename Limits = std::numeric_limits<TyVal>>
     [[nodiscard]] TyVal number(const TyVal min = Limits::min(), const TyVal max = Limits::max()) {
         static_assert(sizeof(Ty) <= sizeof(std::uint64_t));
@@ -90,16 +71,10 @@ namespace rnd {
         return static_cast<TyVal>(dist(detail::prng));
     }
 
-    /// \brief Generate a number of bytes
-    /// \param ptr pointer where it should write these bytes
-    /// \param size number of bytes to generate
     inline void bytes(std::uint8_t* ptr, const std::size_t size) {
         std::ranges::generate_n(ptr, size, []() -> std::uint8_t { return number<std::uint8_t>(); });
     }
 
-    /// \brief Generate a number of bytes and return them as a vector
-    /// \param size number of bytes to generate
-    /// \return vector filled with random bytes
     [[nodiscard]] inline std::vector<std::uint8_t> bytes(const std::size_t size) {
         std::vector<std::uint8_t> result = {};
         result.resize(size);
@@ -108,17 +83,10 @@ namespace rnd {
         return result;
     }
 
-    /// \brief Generate a random boolean based on a percentage chance
-    /// \param chance percentage chance (from 0 to 100)
-    /// \return true or false
     [[nodiscard]] inline bool chance(const std::uint8_t chance) {
         return number<std::uint8_t>(0, 100) <= chance;
     }
 
-    /// \brief Get a random item from the container
-    /// \tparam Rng Range type
-    /// \param range Range value (vector/array/anything)
-    /// \return reference to a random value from the range
     template <std::ranges::range Rng, typename RngValueT = std::ranges::range_value_t<Rng>>
     [[nodiscard]] const RngValueT& item(Rng&& range) {
         auto distance = std::ranges::distance(range);
@@ -127,10 +95,6 @@ namespace rnd {
         return *it;
     }
 
-    /// \brief Select between values
-    /// \tparam TArgs types of the operands
-    /// \param args variadic options
-    /// \return randomly chosen result
     template <typename... TArgs>
     [[nodiscard]] auto or_(TArgs... args) {
         return item(types::to_array(std::forward<TArgs>(args)...));
