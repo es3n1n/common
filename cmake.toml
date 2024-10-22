@@ -22,7 +22,7 @@ alias = "es3n1n::common"
 type = "interface"
 compile-features = ["cxx_std_23"]
 compile-definitions = ["NOMINMAX"]
-include-directories = ["src/lib/"]
+include-directories = ["include/"]
 
 [fetch-content.GTest]
 git = "https://github.com/google/googletest"
@@ -52,13 +52,13 @@ msvc.compile-options = ["/MP"]
 [target.common-tests]
 type = "executable"
 condition = "common-build-tests"
-sources = ["src/tests/**.cpp"]
-include-directories = ["src/tests/"]
+sources = ["tests/**.cpp"]
+include-directories = ["tests/"]
 link-libraries = ["es3n1n::common", "es3n1n::common::project", "GTest::gtest_main"]
 
 [target.common-benchmarks]
 type = "executable"
 condition = "common-build-benchmarks"
-sources = ["src/benchmark/**.cpp"]
+sources = ["benchmark/**.cpp"]
 include-directories = ["src/benchmark/"]
 link-libraries = ["es3n1n::common", "es3n1n::common::project", "benchmark::benchmark"]
