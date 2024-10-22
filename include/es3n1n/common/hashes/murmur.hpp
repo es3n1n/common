@@ -77,9 +77,11 @@ namespace hashes {
             Ty k = 0;
 
             if (!tail.empty()) {
-                for (std::size_t i = 0; i < tail.size(); ++i) {
+                const std::size_t max_shift = sizeof(Ty) * CHAR_BIT;
+                for (std::size_t i = 0; i < tail.size() && (i * sizeof(CharTy) * CHAR_BIT) < max_shift; ++i) {
                     k ^= static_cast<Ty>(tail[i]) << (i * sizeof(CharTy) * CHAR_BIT);
                 }
+
                 k *= Parameters::c1;
                 k = std::rotl(k, Parameters::r1);
                 k *= Parameters::c2;

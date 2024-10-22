@@ -3,8 +3,6 @@
 #include "macros.hpp"
 #include <utility>
 
-/// \brief A class that holds a callable object and executes it upon destruction.
-/// \tparam Callable The type of the callable object.
 template <typename Callable>
 class DeferHolder : public base::NonCopyable {
 public:
