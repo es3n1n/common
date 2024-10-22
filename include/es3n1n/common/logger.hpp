@@ -13,24 +13,18 @@
 #include "platform.hpp"
 
 namespace logger {
-    /// \brief Flag to enable or disable all logging output
     inline bool enabled = true;
 
     namespace detail {
-        /// \brief Configuration options for the logger
         inline bool colors_enabled = true;
         inline bool show_timestamps = true;
 
-        /// \brief Constants for formatting
         constexpr std::size_t kMaxLevelNameSize = 5;
         constexpr std::size_t kIndentationSize = kMaxLevelNameSize; // in spaces
 
-        /// \brief Mutex to ensure thread-safe logging
         inline std::mutex _mtx = {};
 
-        /// \brief Namespace containing color definitions for console output
         namespace colors {
-            /// \brief Console color structure definition
             struct col_t {
                 std::uint8_t fg, bg;
             };
@@ -57,10 +51,6 @@ namespace logger {
             [[maybe_unused]] inline constexpr col_t BRIGHT_WHITE = {97, 107};
         } // namespace colors
 
-        /// \brief Apply color styling to console output
-        /// \param foreground Foreground color code
-        /// \param background Background color code
-        /// \param callback Function to execute with applied styling
         inline void apply_style(const std::uint8_t foreground, const std::uint8_t background, const std::function<void()>& callback) noexcept {
             static std::once_flag once_flag;
 
@@ -80,16 +70,12 @@ namespace logger {
                     return;
                 }
 
-                /// Obtaining current console mode
-                ///
                 DWORD console_flags = 0;
                 if (GetConsoleMode(console_handle, &console_flags) == 0) [[unlikely]] {
                     /// huh? ok lets pray ansi codes would work lol.
                     return;
                 }
 
-                /// Activating virtual terminal
-                ///
                 console_flags |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN;
                 if (SetConsoleMode(console_handle, console_flags) == 0) {
                     console_flags &= ~DISABLE_NEWLINE_AUTO_RETURN;
@@ -103,8 +89,6 @@ namespace logger {
 #endif
             });
 
-            /// Applying style
-            ///
             const auto apply = [](const std::uint8_t fg_value, const std::uint8_t bg_value) -> int {
                 if (!colors_enabled) {
                     return 0;
@@ -116,14 +100,9 @@ namespace logger {
 
                 return std::printf("\033[%d;%dm", fg_value, bg_value);
             };
+
             apply(foreground, background);
-
-            /// Invoke callback
-            ///
             callback();
-
-            /// Reset style
-            ///
             apply(colors::NO_COLOR.fg, colors::NO_COLOR.bg);
         }
 
@@ -135,26 +114,13 @@ namespace logger {
             requires std::is_same_v<Ty, std::basic_string<typename Ty::value_type, typename Ty::traits_type, typename Ty::allocator_type>>;
         };
 
-        /// \brief Main logging function to output formatted log messages
-        /// \tparam Ty String type (deduced)
-        /// \tparam IsWide Flag indicating if the string is wide (default: false)
-        /// \param indentation Number of indentation levels
-        /// \param level_name Name of the log level
-        /// \param color_fg Foreground color for the log level
-        /// \param color_bg Background color for the log level
-        /// \param msg The message to log
         template <str_t Ty, bool IsWide = std::is_same_v<Ty, std::wstring>>
         void log_line(const std::uint8_t indentation, const std::string_view level_name, //
                       const std::uint8_t color_fg, const std::uint8_t color_bg, //
                       const Ty& msg) noexcept {
-            /// If logger is disabled
-            ///
             if (!enabled) {
                 return;
             }
-
-            /// Locking mutex
-            ///
             const std::lock_guard _lock(_mtx);
 
             const auto indent = [](const std::uint8_t ind) -> void {
@@ -171,8 +137,6 @@ namespace logger {
                 }
             };
 
-            /// Iterating lines
-            ///
             std::conditional_t<IsWide, std::wistringstream, std::istringstream> stream(msg);
             for (Ty line; std::getline(stream, line);) {
                 if (show_timestamps) {
@@ -266,24 +230,7 @@ namespace logger {
 #undef MAKE_LOGGER_OR_METHOD
 } // namespace logger
 
-/// \brief Macro to log a FIXME message without arguments
-/// \param indentation Indentation level
-/// \param fmt Format string
 #define FIXME_NO_ARG(indentation, fmt) logger::fixme<indentation>(fmt)
-
-/// \brief Macro to log a TODO message without arguments
-/// \param indentation Indentation level
-/// \param fmt Format string
 #define TODO_NO_ARG(indentation, fmt) logger::todo<indentation>(fmt)
-
-/// \brief Macro to log a FIXME message with arguments
-/// \param indentation Indentation level
-/// \param fmt Format string
-/// \param ... Variable arguments for formatting
 #define FIXME(indentation, fmt, ...) logger::fixme<indentation>(fmt, __VA_ARGS__)
-
-/// \brief Macro to log a TODO message with arguments
-/// \param indentation Indentation level
-/// \param fmt Format string
-/// \param ... Variable arguments for formatting
 #define TODO(indentation, fmt, ...) logger::todo<indentation>(fmt, __VA_ARGS__)

@@ -76,7 +76,6 @@
 #endif
 /// \}
 
-/// \brief Namespace containing platform-specific information
 namespace platform {
     [[maybe_unused]] constexpr size_t bitness = std::numeric_limits<size_t>::digits;
     [[maybe_unused]] constexpr bool is_x64 = bitness == 64;
@@ -96,14 +95,12 @@ namespace platform {
     [[maybe_unused]] constexpr bool is_msvc = PLATFORM_IS_MSVC;
 } // namespace platform
 
-/// \brief Include platform-specific headers
 #ifndef COMMON_NO_COMMON_INCLUDES
     #if PLATFORM_IS_WIN
         #include <Windows.h>
     #endif
 #endif
 
-/// \brief Force inline macro
 #if PLATFORM_IS_MSVC
     #define COMMON_FORCE_INLINE __forceinline
 #else

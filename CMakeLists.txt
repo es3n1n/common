@@ -85,7 +85,7 @@ target_compile_features(common INTERFACE
 )
 
 target_include_directories(common INTERFACE
-	"src/lib/"
+	"include/"
 )
 
 # Target: common-project
@@ -105,27 +105,27 @@ endif()
 # Target: common-tests
 if(COMMON_BUILD_TESTS) # common-build-tests
 	set(common-tests_SOURCES
-		"src/tests/base.cpp"
-		"src/tests/defers.cpp"
-		"src/tests/files.cpp"
-		"src/tests/hashes/crc.cpp"
-		"src/tests/hashes/fnv.cpp"
-		"src/tests/hashes/murmur.cpp"
-		"src/tests/hashes/value_type.cpp"
-		"src/tests/linalg/matrix.cpp"
-		"src/tests/linalg/vector.cpp"
-		"src/tests/logger.cpp"
-		"src/tests/memory/address.cpp"
-		"src/tests/memory/range.cpp"
-		"src/tests/memory/reader.cpp"
-		"src/tests/numeric.cpp"
-		"src/tests/platform.cpp"
-		"src/tests/progress.cpp"
-		"src/tests/random.cpp"
-		"src/tests/string_parser.cpp"
-		"src/tests/strong_integral.cpp"
-		"src/tests/traits.cpp"
-		"src/tests/types.cpp"
+		"tests/base.cpp"
+		"tests/defers.cpp"
+		"tests/files.cpp"
+		"tests/hashes/crc.cpp"
+		"tests/hashes/fnv.cpp"
+		"tests/hashes/murmur.cpp"
+		"tests/hashes/value_type.cpp"
+		"tests/linalg/matrix.cpp"
+		"tests/linalg/vector.cpp"
+		"tests/logger.cpp"
+		"tests/memory/address.cpp"
+		"tests/memory/range.cpp"
+		"tests/memory/reader.cpp"
+		"tests/numeric.cpp"
+		"tests/platform.cpp"
+		"tests/progress.cpp"
+		"tests/random.cpp"
+		"tests/string_parser.cpp"
+		"tests/strong_integral.cpp"
+		"tests/traits.cpp"
+		"tests/types.cpp"
 		cmake.toml
 	)
 
@@ -135,7 +135,7 @@ if(COMMON_BUILD_TESTS) # common-build-tests
 	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${common-tests_SOURCES})
 
 	target_include_directories(common-tests PRIVATE
-		"src/tests/"
+		"tests/"
 	)
 
 	target_link_libraries(common-tests PRIVATE
@@ -153,8 +153,8 @@ endif()
 # Target: common-benchmarks
 if(COMMON_BUILD_BENCHMARKS) # common-build-benchmarks
 	set(common-benchmarks_SOURCES
-		"src/benchmark/benchmarks/string_parser.cpp"
-		"src/benchmark/main.cpp"
+		"benchmark/benchmarks/string_parser.cpp"
+		"benchmark/main.cpp"
 		cmake.toml
 	)
 

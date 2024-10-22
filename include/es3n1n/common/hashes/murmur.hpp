@@ -6,23 +6,18 @@
 
 namespace hashes {
     namespace detail {
-        /// \brief Murmur3 hash function parameters
         template <detail::HashSize Ty, std::endian Endian = std::endian::little>
         struct MurmurParameters {
-            /// \brief Input data chunks will be converted to the endianness specified by this parameter
             static constexpr std::endian endian = Endian;
 
-            /// \brief The seed constants
             static constexpr Ty c1 = sizeof(Ty) == 4 ? 0xcc9e2d51 : 0x87c37b91114253d5;
             static constexpr Ty c2 = sizeof(Ty) == 4 ? 0x1b873593 : 0x4cf5ad432745937f;
 
-            /// \brief The shift and rotation constants
             static constexpr Ty r1 = sizeof(Ty) == 4 ? 15 : 31;
             static constexpr Ty r2 = sizeof(Ty) == 4 ? 13 : 27;
             static constexpr Ty m = 5;
             static constexpr Ty n = 0xe6546b64;
 
-            /// \brief The finalization constants
             static constexpr Ty fmix_c1 = sizeof(Ty) == 4 ? 0x85ebca6b : 0xff51afd7ed558ccd;
             static constexpr Ty fmix_c2 = sizeof(Ty) == 4 ? 0xc2b2ae35 : 0xc4ceb9fe1a85ec53;
             static constexpr Ty fmix_shift_1 = sizeof(Ty) == 4 ? 16 : 33;
@@ -33,7 +28,8 @@ namespace hashes {
 
     /// \brief Murmur3 hash function
     /// \tparam Ty The size type for the hash
-    /// \note This implementation hashes the sequence of bytes, so hash(L"hello") and hash("hello") will produce different results
+    /// \note This implementation hashes the sequence of bytes,
+    ///     so hash(L"hello") and hash("hello") will produce different results
     /// \see https://en.wikipedia.org/wiki/MurmurHash
     template <detail::HashSize Ty, Ty Seed = 0, typename Parameters = detail::MurmurParameters<Ty>>
         requires(std::is_same_v<Ty, std::uint32_t>) /// \todo @es3n1n: Add support for 128-bit hashes once we have a 128-bit integer type
@@ -58,10 +54,6 @@ namespace hashes {
         }
 
     public:
-        /// \brief Implementation of the Murmur3 hash function
-        /// \tparam CharTy The character type
-        /// \param value The span of characters to hash
-        /// \return The computed hash
         template <detail::Hashable CharTy>
         [[nodiscard]] static constexpr Ty hash_impl(const std::span<CharTy> value) noexcept {
             Ty h = Seed;
@@ -85,9 +77,11 @@ namespace hashes {
             Ty k = 0;
 
             if (!tail.empty()) {
-                for (std::size_t i = 0; i < tail.size(); ++i) {
+                const std::size_t max_shift = sizeof(Ty) * CHAR_BIT;
+                for (std::size_t i = 0; i < tail.size() && (i * sizeof(CharTy) * CHAR_BIT) < max_shift; ++i) {
                     k ^= static_cast<Ty>(tail[i]) << (i * sizeof(CharTy) * CHAR_BIT);
                 }
+
                 k *= Parameters::c1;
                 k = std::rotl(k, Parameters::r1);
                 k *= Parameters::c2;
@@ -105,7 +99,6 @@ namespace hashes {
         }
     };
 
-    /// \brief Type alias for Murmur3 hash function
     using Murmur3_32 = Murmur3<std::uint32_t>;
 } // namespace hashes
 
