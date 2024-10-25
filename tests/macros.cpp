@@ -24,7 +24,8 @@ struct Unaligned2 {
     std::uint8_t a;
     std::uint16_t b;
     std::uint16_t c;
-} COMMON_PACKED_END;
+};
+COMMON_PACKED_END;
 
 struct Aligned3 {
     std::uint8_t a;
