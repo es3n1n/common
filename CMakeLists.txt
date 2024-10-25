@@ -115,6 +115,7 @@ if(COMMON_BUILD_TESTS) # common-build-tests
 		"tests/linalg/matrix.cpp"
 		"tests/linalg/vector.cpp"
 		"tests/logger.cpp"
+		"tests/macros.cpp"
 		"tests/memory/address.cpp"
 		"tests/memory/range.cpp"
 		"tests/memory/reader.cpp"
