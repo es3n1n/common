@@ -123,6 +123,7 @@ if(COMMON_BUILD_TESTS) # common-build-tests
 		"tests/platform.cpp"
 		"tests/progress.cpp"
 		"tests/random.cpp"
+		"tests/save_restore.cpp"
 		"tests/string_parser.cpp"
 		"tests/strong_integral.cpp"
 		"tests/traits.cpp"
