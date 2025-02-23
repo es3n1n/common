@@ -11,7 +11,7 @@
 
 namespace string_parser {
     namespace detail {
-        void strip_hex_prefix(std::string& str, bool is_negative) {
+        inline void strip_hex_prefix(std::string& str, bool is_negative) {
             /// We trust the is_negative, we also trust that the input is indeed in hexadecimal form.
             if (str.size() < 2) {
                 return;
@@ -41,7 +41,8 @@ namespace string_parser {
             auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), result, base);
             if (ec == std::errc::invalid_argument) {
                 throw std::invalid_argument("Failed to parse integer from string: invalid argument");
-            } else if (ec == std::errc::result_out_of_range) {
+            }
+            if (ec == std::errc::result_out_of_range) {
                 throw std::out_of_range("Failed to parse integer from string: out of range");
             }
 

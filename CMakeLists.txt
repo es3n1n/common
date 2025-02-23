@@ -52,7 +52,7 @@ if(COMMON_BUILD_TESTS) # common-build-tests
 	endif()
 
 	message(STATUS "Fetching GTest (v1.15.2)...")
-	FetchContent_Declare(GTest SYSTEM
+	FetchContent_Declare(GTest
 		GIT_REPOSITORY
 			"https://github.com/google/googletest"
 		GIT_TAG
@@ -63,7 +63,7 @@ if(COMMON_BUILD_TESTS) # common-build-tests
 endif()
 if(COMMON_BUILD_BENCHMARKS) # common-build-benchmarks
 	message(STATUS "Fetching GBenchmark (v1.8.5)...")
-	FetchContent_Declare(GBenchmark SYSTEM
+	FetchContent_Declare(GBenchmark
 		GIT_REPOSITORY
 			"https://github.com/google/benchmark"
 		GIT_TAG
