@@ -25,6 +25,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 endif()
 
 # Options
+option(COMMON_LINK_TO_HOMEBREW_STL "" OFF)
 option(COMMON_BUILD_TESTS "" OFF)
 option(COMMON_BUILD_BENCHMARKS "" OFF)
 option(BENCHMARK_ENABLE_TESTING "" OFF)
@@ -87,6 +88,15 @@ target_compile_features(common INTERFACE
 target_include_directories(common INTERFACE
 	"include/"
 )
+
+set(CMKR_TARGET common)
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin" AND
+    COMMON_LINK_TO_HOMEBREW_STL)
+    message(STATUS "Linking to libc++ from Homebrew")
+    target_link_directories(common INTERFACE
+        /opt/homebrew/opt/llvm/lib/c++
+    )
+endif()
 
 # Target: common-project
 add_library(common-project INTERFACE)

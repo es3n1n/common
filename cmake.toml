@@ -7,6 +7,7 @@ name = "common"
 languages = ["CXX"]
 
 [options]
+COMMON_LINK_TO_HOMEBREW_STL = false
 COMMON_BUILD_TESTS = false
 COMMON_BUILD_BENCHMARKS = false
 BENCHMARK_ENABLE_TESTING = false
@@ -23,6 +24,15 @@ type = "interface"
 compile-features = ["cxx_std_23"]
 compile-definitions = ["NOMINMAX"]
 include-directories = ["include/"]
+cmake-after = """
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin" AND
+    COMMON_LINK_TO_HOMEBREW_STL)
+    message(STATUS "Linking to libc++ from Homebrew")
+    target_link_directories(common INTERFACE
+        /opt/homebrew/opt/llvm/lib/c++
+    )
+endif()
+"""
 
 [fetch-content.GTest]
 git = "https://github.com/google/googletest"
