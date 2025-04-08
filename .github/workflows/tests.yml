@@ -4,16 +4,20 @@ on:
   pull_request:
     paths:
       - '.github/workflows/tests.yml'
+      - 'benchmark/**'
       - 'cmake/**'
-      - 'src/**'
+      - 'include/**'
+      - 'tests/**'
       - 'CMakeLists.txt'
   push:
     branches:
       - master
     paths:
       - '.github/workflows/tests.yml'
+      - 'benchmark/**'
       - 'cmake/**'
-      - 'src/**'
+      - 'include/**'
+      - 'tests/**'
       - 'CMakeLists.txt'
 
 jobs:
