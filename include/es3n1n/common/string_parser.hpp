@@ -51,6 +51,10 @@ namespace string_parser {
         }
     } // namespace detail
 
+    [[nodiscard]] inline std::uint64_t parse_int64(const std::string_view s, const std::size_t base = 10) {
+        return detail::parse_from_chars<std::int64_t>(std::string(s), static_cast<int>(base));
+    }
+
     [[nodiscard]] inline std::uint64_t parse_uint64(const std::string_view s, const std::size_t base = 10) {
         return detail::parse_from_chars<std::uint64_t>(std::string(s), static_cast<int>(base));
     }

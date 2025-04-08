@@ -2,6 +2,16 @@
 #include <gtest/gtest.h>
 
 TEST(string_parser, basics) {
+    EXPECT_EQ(string_parser::parse_int64("-123"), -123);
+    EXPECT_EQ(string_parser::parse_int64("0x123", 16), 0x123);
+    EXPECT_EQ(string_parser::parse_int64("0X123", 16), 0x123);
+    EXPECT_EQ(string_parser::parse_int64("-0X123", 16), -0x123);
+    EXPECT_EQ(string_parser::parse_int64("-0x123", 16), -0x123);
+
+    EXPECT_EQ(string_parser::parse_uint64("123"), 123);
+    EXPECT_EQ(string_parser::parse_uint64("0x123", 16), 0x123);
+    EXPECT_EQ(string_parser::parse_uint64("0X123", 16), 0x123);
+
     EXPECT_EQ(string_parser::parse_int32("-123"), -123);
     EXPECT_EQ(string_parser::parse_int32("0x123", 16), 0x123);
     EXPECT_EQ(string_parser::parse_int32("0X123", 16), 0x123);
