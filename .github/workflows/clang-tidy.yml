@@ -4,18 +4,21 @@ on:
   pull_request:
     paths:
       - '.github/workflows/clang-tidy.yml'
+      - 'benchmark/**'
       - 'cmake/**'
-      - 'src/**'
+      - 'include/**'
+      - 'tests/**'
       - 'CMakeLists.txt'
   push:
     branches:
       - master
     paths:
       - '.github/workflows/clang-tidy.yml'
+      - 'benchmark/**'
       - 'cmake/**'
-      - 'src/**'
+      - 'include/**'
+      - 'tests/**'
       - 'CMakeLists.txt'
-
 jobs:
   test_cxx:
     name: Run
