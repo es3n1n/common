@@ -51,7 +51,7 @@ namespace rnd {
                 const UResultTy range = u_max - u_min + 1;
 
                 const auto r_raw = engine();
-                if (u_max - u_min == static_cast<UResultTy>(-1)) {
+                if (u_max - u_min == static_cast<UResultTy>(-1) || range == 0) {
                     return static_cast<ResultTy>(r_raw);
                 }
 
@@ -90,7 +90,7 @@ namespace rnd {
     template <std::ranges::range Rng, typename RngValueT = std::ranges::range_value_t<Rng>>
     [[nodiscard]] const RngValueT& item(Rng&& range) {
         auto distance = std::ranges::distance(range);
-        auto generated_number = rnd::number<>(std::size_t(0), static_cast<std::size_t>(distance - 1));
+        auto generated_number = rnd::number<>(static_cast<std::size_t>(0), static_cast<std::size_t>(distance - 1));
         auto it = std::ranges::next(std::ranges::begin(range), generated_number);
         return *it;
     }

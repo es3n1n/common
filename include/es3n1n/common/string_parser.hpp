@@ -31,10 +31,10 @@ namespace string_parser {
         template <std::integral Ty>
         [[nodiscard]] Ty parse_from_chars(std::string s, int base = 10) {
             const auto is_negative = s.front() == '-';
-            const auto is_hex = base == 16;
 
-            if (is_hex) {
+            if (const auto is_hex = base == 16 || (s.size() >= 2 && s[0] == '0' && (s[1] == 'x' || s[1] == 'X'))) {
                 strip_hex_prefix(s, is_negative);
+                base = 16;
             }
 
             Ty result;
