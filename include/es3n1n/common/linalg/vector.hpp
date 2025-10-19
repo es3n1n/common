@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <concepts>
 #include <cstdint>
 #include <initializer_list>
 #include <numeric>
@@ -10,6 +9,10 @@
 
 #include "es3n1n/common/options.hpp"
 #include "es3n1n/common/traits.hpp"
+
+#if defined(COMMON_HAS_IMGUI)
+    #include <imgui.h>
+#endif
 
 namespace linalg {
     /// \brief A templated vector class representing an N-dimensional vector of numeric type Ty
