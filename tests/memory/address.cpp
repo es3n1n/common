@@ -1,4 +1,6 @@
 #include <array>
+#include <cstdint>
+#include "es3n1n/common/platform.hpp"
 #include <es3n1n/common/memory/address.hpp>
 #include <gtest/gtest.h>
 
@@ -194,8 +196,10 @@ TEST(address, bitwise_operations) {
     memory::address max_addr(std::numeric_limits<std::uintptr_t>::max());
     EXPECT_EQ(max_addr << 1, memory::address(std::numeric_limits<std::uintptr_t>::max() << 1));
 
-    memory::address large_addr(0x1234567890ABCDEF);
-    EXPECT_EQ(large_addr >> 32, memory::address(0x12345678));
+    if constexpr (platform::is_x64) {
+        memory::address large_addr(0x1234567890ABCDEF);
+        EXPECT_EQ(large_addr >> 32, memory::address(0x12345678));
+    }
 }
 
 TEST(address, string_conversion) {
@@ -230,4 +234,79 @@ TEST(address, page_aligns) {
     memory::address addr3(0x2001);
     EXPECT_EQ(addr3.page_align_down(), memory::address(0x2000));
     EXPECT_EQ(addr3.page_align_up(), memory::address(0x3000));
+}
+
+template <typename T>
+inline std::uintptr_t GetAbsAddr(const std::uintptr_t addr, const std::ptrdiff_t disp_offset, const std::size_t insn_size) {
+
+    const auto displacement = *reinterpret_cast<T*>(addr + disp_offset);
+
+    return (addr + insn_size) + displacement;
+}
+
+// note: inf: emulate instruction layout in memory for unit tests
+TEST(address, absolute_addressing_rel32) {
+    std::array<std::uint8_t, 16> memory_buffer{};
+    memory::Address insn_start = memory_buffer.data();
+
+    constexpr std::ptrdiff_t disp_offset = 3;
+    constexpr std::size_t insn_size = disp_offset + sizeof(std::int32_t);
+
+    *reinterpret_cast<std::int32_t*>(&memory_buffer[disp_offset]) = 0x50;
+
+    const std::uintptr_t expected_addr = GetAbsAddr<std::int32_t>(insn_start.inner(), disp_offset, insn_size);
+    auto result = insn_start.rel32(disp_offset);
+
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->inner(), expected_addr);
+    EXPECT_EQ(result->inner(), insn_start.inner() + insn_size + 0x50);
+
+    auto result_ptr_expected = insn_start.rel32<void*>(disp_offset);
+    ASSERT_TRUE(result_ptr_expected.has_value());
+    EXPECT_EQ(reinterpret_cast<std::uintptr_t>(*result_ptr_expected), expected_addr);
+}
+
+TEST(address, absolute_addressing_rel16) {
+    std::array<std::uint8_t, 16> memory_buffer{};
+    memory::Address insn_start = memory_buffer.data();
+
+    constexpr std::ptrdiff_t disp_offset = 2;
+    constexpr std::int16_t displacement = -0x20;
+    constexpr std::size_t insn_size = disp_offset + sizeof(std::int16_t);
+
+    *reinterpret_cast<std::int16_t*>(&memory_buffer[disp_offset]) = displacement;
+
+    const std::uintptr_t expected_addr = GetAbsAddr<std::int16_t>(insn_start.inner(), disp_offset, insn_size);
+
+    auto result = insn_start.rel16(disp_offset);
+
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->inner(), expected_addr);
+    EXPECT_EQ(result->inner(), insn_start.inner() + insn_size + displacement);
+}
+
+TEST(address, absolute_addressing_rel8) {
+    std::array<std::uint8_t, 16> memory_buffer{};
+    memory::Address insn_start = memory_buffer.data();
+
+    constexpr std::ptrdiff_t disp_offset = 1;
+    constexpr std::int8_t displacement = 0x1A;
+    constexpr std::size_t insn_size = disp_offset + sizeof(std::int8_t);
+
+    *reinterpret_cast<std::int8_t*>(&memory_buffer[disp_offset]) = displacement;
+
+    const std::uintptr_t expected_addr = GetAbsAddr<std::int8_t>(insn_start.inner(), disp_offset, insn_size);
+
+    auto result = insn_start.rel8(disp_offset);
+
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->inner(), expected_addr);
+    EXPECT_EQ(result->inner(), insn_start.inner() + insn_size + displacement);
+}
+
+TEST(address, absolute_addressing_error_handling) {
+    memory::Address null_addr(nullptr);
+    auto result_from_null = null_addr.rel32();
+    ASSERT_FALSE(result_from_null.has_value());
+    EXPECT_EQ(result_from_null.error(), memory::ErrorCode::INVALID_ADDRESS);
 }
