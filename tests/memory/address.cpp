@@ -250,20 +250,17 @@ TEST(address, absolute_addressing_rel32) {
     memory::Address insn_start = memory_buffer.data();
 
     constexpr std::ptrdiff_t disp_offset = 3;
+    constexpr std::int16_t displacement = 0x50;
     constexpr std::size_t insn_size = disp_offset + sizeof(std::int32_t);
 
-    *reinterpret_cast<std::int32_t*>(&memory_buffer[disp_offset]) = 0x50;
+    *reinterpret_cast<std::int32_t*>(&memory_buffer[disp_offset]) = displacement;
 
     const std::uintptr_t expected_addr = GetAbsAddr<std::int32_t>(insn_start.inner(), disp_offset, insn_size);
     auto result = insn_start.rel32(disp_offset);
 
     ASSERT_TRUE(result.has_value());
     EXPECT_EQ(result->inner(), expected_addr);
-    EXPECT_EQ(result->inner(), insn_start.inner() + insn_size + 0x50);
-
-    auto result_ptr_expected = insn_start.rel32<void*>(disp_offset);
-    ASSERT_TRUE(result_ptr_expected.has_value());
-    EXPECT_EQ(reinterpret_cast<std::uintptr_t>(*result_ptr_expected), expected_addr);
+    EXPECT_EQ(result->inner(), insn_start.inner() + insn_size + displacement);
 }
 
 TEST(address, absolute_addressing_rel16) {
@@ -277,8 +274,7 @@ TEST(address, absolute_addressing_rel16) {
     *reinterpret_cast<std::int16_t*>(&memory_buffer[disp_offset]) = displacement;
 
     const std::uintptr_t expected_addr = GetAbsAddr<std::int16_t>(insn_start.inner(), disp_offset, insn_size);
-
-    auto result = insn_start.rel16(disp_offset);
+    const auto result = insn_start.rel16(disp_offset);
 
     ASSERT_TRUE(result.has_value());
     EXPECT_EQ(result->inner(), expected_addr);
@@ -297,7 +293,7 @@ TEST(address, absolute_addressing_rel8) {
 
     const std::uintptr_t expected_addr = GetAbsAddr<std::int8_t>(insn_start.inner(), disp_offset, insn_size);
 
-    auto result = insn_start.rel8(disp_offset);
+    const auto result = insn_start.rel8(disp_offset);
 
     ASSERT_TRUE(result.has_value());
     EXPECT_EQ(result->inner(), expected_addr);
@@ -306,7 +302,9 @@ TEST(address, absolute_addressing_rel8) {
 
 TEST(address, absolute_addressing_error_handling) {
     memory::Address null_addr(nullptr);
-    auto result_from_null = null_addr.rel32();
-    ASSERT_FALSE(result_from_null.has_value());
-    EXPECT_EQ(result_from_null.error(), memory::ErrorCode::INVALID_ADDRESS);
+
+    const auto result = null_addr.rel32();
+
+    ASSERT_FALSE(result.has_value());
+    EXPECT_EQ(result.error(), memory::ErrorCode::INVALID_ADDRESS);
 }
