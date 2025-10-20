@@ -1,6 +1,6 @@
+#include "es3n1n/common/platform.hpp"
 #include <array>
 #include <cstdint>
-#include "es3n1n/common/platform.hpp"
 #include <es3n1n/common/memory/address.hpp>
 #include <gtest/gtest.h>
 
