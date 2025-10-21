@@ -224,6 +224,57 @@ namespace memory {
             return static_cast<std::ptrdiff_t>(other.address_ - address_);
         }
 
+        template <typename ResultT = Address, std::integral DisplacementT = std::int32_t>
+        [[nodiscard]] std::expected<ResultT, ErrorCode> follow(const std::ptrdiff_t disp_offset = 0) const {
+            if (!address_) {
+                return std::unexpected(ErrorCode::INVALID_ADDRESS);
+            }
+            const Address base = this->offset(disp_offset);
+
+            auto disp = base.read<DisplacementT>();
+            if (!disp) {
+                return std::unexpected(disp.error());
+            }
+
+            const Address final_addr = base.offset(sizeof(DisplacementT) + *disp);
+
+            if constexpr (std::is_same_v<ResultT, Address>) {
+                return final_addr;
+            } else {
+                return final_addr.as<ResultT>();
+            }
+        }
+
+        template <typename ResultT = Address>
+        [[nodiscard]] std::expected<ResultT, ErrorCode> follow32(const std::ptrdiff_t disp_offset = 0) const {
+            return follow<ResultT, std::int32_t>(disp_offset);
+        }
+
+        template <typename ResultT = Address>
+        [[nodiscard]] std::expected<ResultT, ErrorCode> rel32(const std::ptrdiff_t disp_offset = 0) const {
+            return follow32<ResultT>(disp_offset);
+        }
+
+        template <typename ResultT = Address>
+        [[nodiscard]] std::expected<ResultT, ErrorCode> follow16(const std::ptrdiff_t disp_offset = 0) const {
+            return follow<ResultT, std::int16_t>(disp_offset);
+        }
+
+        template <typename ResultT = Address>
+        [[nodiscard]] std::expected<ResultT, ErrorCode> rel16(const std::ptrdiff_t disp_offset = 0) const {
+            return follow16<ResultT>(disp_offset);
+        }
+
+        template <typename ResultT = Address>
+        [[nodiscard]] std::expected<ResultT, ErrorCode> follow8(const std::ptrdiff_t disp_offset = 0) const {
+            return follow<ResultT, std::int8_t>(disp_offset);
+        }
+
+        template <typename ResultT = Address>
+        [[nodiscard]] std::expected<ResultT, ErrorCode> rel8(const std::ptrdiff_t disp_offset = 0) const {
+            return follow8<ResultT>(disp_offset);
+        }
+
     private:
         std::uintptr_t address_ = 0;
     };
