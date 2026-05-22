@@ -108,7 +108,7 @@ namespace platform {
 
     [[maybe_unused]] constexpr bool is_gcc = PLATFORM_IS_GCC;
     [[maybe_unused]] constexpr bool is_clang = PLATFORM_IS_CLANG;
-    [[maybe_unused]] constexpr bool is_msvc = PLATFORM_IS_MSVC;    
+    [[maybe_unused]] constexpr bool is_msvc = PLATFORM_IS_MSVC;
 } // namespace platform
 
 #ifndef COMMON_NO_COMMON_INCLUDES
